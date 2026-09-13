@@ -1,0 +1,11 @@
+# large artefacts — never commit these
+*.engine
+*.safetensors
+*.bin
+*.pt
+*.onnx
+*.gguf
+__pycache__/
+*.pyc
+results/**/*.log
+models/

@@ -1,0 +1,428 @@
+{
+  "prompt_set_sha256": "77763576f2f044c8128fe5e3302a2def6dec52742cc2a4b3a8e93860c7674b0e",
+  "prompt_set_version": "1.1",
+  "tokenizer": "/home/jiming/models/Qwen3-8B-tokenizer",
+  "chat_template_applied": true,
+  "thinking_enabled": false,
+  "buckets": {
+    "short": {
+      "n": 10,
+      "min": 19,
+      "median": 24,
+      "mean": 23.2,
+      "max": 26,
+      "target": [
+        10,
+        30
+      ],
+      "verdict": "OK"
+    },
+    "medium": {
+      "n": 10,
+      "min": 230,
+      "median": 264,
+      "mean": 274.6,
+      "max": 360,
+      "target": [
+        220,
+        300
+      ],
+      "verdict": "OK"
+    },
+    "long": {
+      "n": 10,
+      "min": 884,
+      "median": 938,
+      "mean": 935.4,
+      "max": 1000,
+      "target": [
+        900,
+        1100
+      ],
+      "verdict": "OK"
+    }
+  },
+  "per_prompt": [
+    {
+      "id": "S01",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 24,
+      "tokens_plain": 12,
+      "chars": 57
+    },
+    {
+      "id": "S02",
+      "bucket": "short",
+      "language": "zh",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 19,
+      "tokens_plain": 7,
+      "chars": 19
+    },
+    {
+      "id": "S03",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 24,
+      "tokens_plain": 12,
+      "chars": 48
+    },
+    {
+      "id": "S04",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 19,
+      "tokens_plain": 7,
+      "chars": 33
+    },
+    {
+      "id": "S05",
+      "bucket": "short",
+      "language": "zh",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 24,
+      "tokens_plain": 12,
+      "chars": 20
+    },
+    {
+      "id": "S06",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 21,
+      "tokens_plain": 9,
+      "chars": 43
+    },
+    {
+      "id": "S07",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 26,
+      "tokens_plain": 14,
+      "chars": 74
+    },
+    {
+      "id": "S08",
+      "bucket": "short",
+      "language": "zh",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 26,
+      "tokens_plain": 14,
+      "chars": 20
+    },
+    {
+      "id": "S09",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 26,
+      "tokens_plain": 14,
+      "chars": 71
+    },
+    {
+      "id": "S10",
+      "bucket": "short",
+      "language": "en",
+      "doc_refs": [],
+      "paragraph_slice": null,
+      "tokens_chat_template": 23,
+      "tokens_plain": 11,
+      "chars": 47
+    },
+    {
+      "id": "M01",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D1"
+      ],
+      "paragraph_slice": [
+        3,
+        5
+      ],
+      "tokens_chat_template": 317,
+      "tokens_plain": 305,
+      "chars": 1325
+    },
+    {
+      "id": "M02",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D2"
+      ],
+      "paragraph_slice": [
+        3,
+        5
+      ],
+      "tokens_chat_template": 232,
+      "tokens_plain": 220,
+      "chars": 1091
+    },
+    {
+      "id": "M03",
+      "bucket": "medium",
+      "language": "zh",
+      "doc_refs": [
+        "D4"
+      ],
+      "paragraph_slice": [
+        1,
+        4
+      ],
+      "tokens_chat_template": 296,
+      "tokens_plain": 284,
+      "chars": 461
+    },
+    {
+      "id": "M04",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D2"
+      ],
+      "paragraph_slice": [
+        4,
+        6
+      ],
+      "tokens_chat_template": 360,
+      "tokens_plain": 348,
+      "chars": 1382
+    },
+    {
+      "id": "M05",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D2"
+      ],
+      "paragraph_slice": [
+        4,
+        6
+      ],
+      "tokens_chat_template": 292,
+      "tokens_plain": 280,
+      "chars": 1464
+    },
+    {
+      "id": "M06",
+      "bucket": "medium",
+      "language": "zh",
+      "doc_refs": [
+        "D4"
+      ],
+      "paragraph_slice": [
+        3,
+        6
+      ],
+      "tokens_chat_template": 266,
+      "tokens_plain": 254,
+      "chars": 391
+    },
+    {
+      "id": "M07",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D3"
+      ],
+      "paragraph_slice": [
+        0,
+        2
+      ],
+      "tokens_chat_template": 230,
+      "tokens_plain": 218,
+      "chars": 1088
+    },
+    {
+      "id": "M08",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D1"
+      ],
+      "paragraph_slice": [
+        2,
+        4
+      ],
+      "tokens_chat_template": 262,
+      "tokens_plain": 250,
+      "chars": 1231
+    },
+    {
+      "id": "M09",
+      "bucket": "medium",
+      "language": "zh",
+      "doc_refs": [
+        "D5"
+      ],
+      "paragraph_slice": [
+        2,
+        5
+      ],
+      "tokens_chat_template": 255,
+      "tokens_plain": 243,
+      "chars": 373
+    },
+    {
+      "id": "M10",
+      "bucket": "medium",
+      "language": "en",
+      "doc_refs": [
+        "D3"
+      ],
+      "paragraph_slice": [
+        2,
+        4
+      ],
+      "tokens_chat_template": 236,
+      "tokens_plain": 224,
+      "chars": 1203
+    },
+    {
+      "id": "L01",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D1",
+        "D2"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 1000,
+      "tokens_plain": 988,
+      "chars": 5632
+    },
+    {
+      "id": "L02",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D1",
+        "D3"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 955,
+      "tokens_plain": 943,
+      "chars": 5264
+    },
+    {
+      "id": "L03",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D2",
+        "D3"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 919,
+      "tokens_plain": 907,
+      "chars": 5128
+    },
+    {
+      "id": "L04",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D2",
+        "D1"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 993,
+      "tokens_plain": 981,
+      "chars": 5614
+    },
+    {
+      "id": "L05",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D3",
+        "D2"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 929,
+      "tokens_plain": 917,
+      "chars": 5188
+    },
+    {
+      "id": "L06",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D3",
+        "D1"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 953,
+      "tokens_plain": 941,
+      "chars": 5236
+    },
+    {
+      "id": "L07",
+      "bucket": "long",
+      "language": "zh",
+      "doc_refs": [
+        "D4",
+        "D5"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 884,
+      "tokens_plain": 872,
+      "chars": 1370
+    },
+    {
+      "id": "L08",
+      "bucket": "long",
+      "language": "zh",
+      "doc_refs": [
+        "D5",
+        "D4"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 887,
+      "tokens_plain": 875,
+      "chars": 1379
+    },
+    {
+      "id": "L09",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D6",
+        "D1"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 947,
+      "tokens_plain": 935,
+      "chars": 5248
+    },
+    {
+      "id": "L10",
+      "bucket": "long",
+      "language": "en",
+      "doc_refs": [
+        "D6",
+        "D3"
+      ],
+      "paragraph_slice": null,
+      "tokens_chat_template": 887,
+      "tokens_plain": 875,
+      "chars": 4850
+    }
+  ],
+  "structural_problems": []
+}

@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "name": "llm-quant-serve prompt set",
+    "version": "1.1",
+    "created": "2026-09-13",
+    "frozen_by": "JimingYang",
+    "revision_note": "v1.1 replaces v1.0 after measurement. v1.0's medium bucket measured a median of 31 tokens against a target of ~256, indistinguishable from the short bucket, and the long bucket measured 461 tokens against ~1024. Rather than pad with filler prose, medium prompts now reuse 2-3 paragraphs of a topically related document and long prompts pair two documents, which reaches the intended token ranges using coherent text.",
+    "purpose": "Fixed workload for latency and quality measurement across BF16 / INT8 / FP8 / 4-bit tiers. The set never changes once frozen; any change requires a new version and re-measurement of all tiers.",
+    "loader_contract": "paragraphs = []; for each ref in doc_refs: take documents[ref].paragraphs, sliced by paragraph_slice if present; then append instruction. prompt_text = '\\n\\n'.join(paragraphs)",
+    "fields": {
+      "doc_refs": "array of document ids whose paragraphs form the long context (empty/absent for short prompts)",
+      "paragraph_slice": "optional [start, end) applied to each referenced document's paragraphs; used to size the medium bucket",
+      "instruction": "always appended last, separated by a blank line"
+    },
+    "token_counting": {
+      "tokenizer": "Qwen/Qwen3-8B",
+      "method": "chat template applied with add_generation_prompt=true, enable_thinking=false",
+      "measured": "see prompts/prompt_set.stats.json"
+    },
+    "buckets": {
+      "short": "single-sentence instruction, target ~20 tokens",
+      "medium": "short artefact plus 2-3 context paragraphs, target ~256 tokens",
+      "long": "two documents as context, target ~1000 tokens"
+    },
+    "composition": "10 short + 10 medium + 10 long = 30 prompts; English technical, Chinese, code, reasoning, long-context summarisation",
+    "reuse_note": "Documents D1-D6 are shared across prompts by design; reuse is recorded per item. Loaders must resolve doc_refs from this file rather than assuming one unique document per prompt."
+  },
+
+  "documents": {
+    "D1": {
+      "title": "Postmortem: inference service rollout failure",
+      "language": "en",
+      "paragraphs": [
+        "A single-node inference service was rolled out to production on a Tuesday evening. The canary instance passed synthetic health checks in under a minute; the rollout was then extended to the full fleet over twenty minutes. Fourteen minutes after the first production request, the on-call engineer received p99 latency alerts, and thirty-one minutes in, the service was returning errors on roughly 3 percent of requests.",
+        "The service loads a large language model, applies a quantization recipe prepared offline, and serves an OpenAI-compatible HTTP interface. Preparation happens in a separate pipeline and publishes a checkpoint plus a configuration file. The serving image pins its runtime and framework versions explicitly; the offline pipeline does not pin the quantization tool.",
+        "During the incident, the first hypothesis was memory pressure. GPU memory utilisation was indeed higher than the previous release, but still below the configured limit. The second hypothesis was a traffic change, which was quickly disproved: request mix and arrival rate were identical to the prior week.",
+        "The actual sequence was reconstructed from build logs. The offline pipeline had been re-run two days earlier and had silently upgraded its quantization tool by a minor version. The resulting checkpoint used a quantizer configuration field that the serving runtime did not recognise. Rather than failing to load, the runtime ignored the unknown field and fell back to a default scheme. Model output therefore differed from the evaluation run, while all health checks passed because they only verified that requests were answered, not what was answered.",
+        "Two contributing factors made the problem harder to detect. First, the canary only exercised a short-prompt workload, so the divergence in decoding behaviour did not appear. Second, latency dashboards were segmented by endpoint rather than by model revision, so the regression was attributed to the wrong release candidate for twenty minutes.",
+        "The remediation had three parts: roll back to the previous checkpoint, add a startup validation that refuses to serve when the checkpoint configuration contains unknown fields, and add a golden-output regression test that runs a fixed prompt subset and compares generated tokens against a stored reference. The third control is the one that would have caught this class of failure automatically.",
+        "The broader lesson concerned controls versus checks. Health checks confirmed liveness; nothing confirmed behavioural equivalence. The team adopted the rule that any artefact produced by a separate pipeline must be validated at load time against a schema the consumer owns, and that a sample of generated outputs must be compared before traffic is shifted."
+      ]
+    },
+    "D2": {
+      "title": "Design note: post-training quantization pipeline for an 8B-class LLM",
+      "language": "en",
+      "paragraphs": [
+        "This note describes a pipeline that converts an instruction-tuned language model into quantized variants for deployment on a single accelerator with limited memory. The pipeline runs offline, is fully scripted, and publishes immutable artefacts consumed by the serving stack.",
+        "Inputs are a base checkpoint in half precision, a calibration corpus, and a recipe describing the quantization scheme. Outputs are a quantized checkpoint, a configuration file recording the scheme, and a report containing measured quality and performance deltas relative to the unquantized reference.",
+        "The calibration corpus is drawn from a source disjoint from the evaluation corpus. Corpus manifests and their digests are recorded so that any later comparison can be traced to exact inputs. Sample counts are treated as a swept parameter rather than a constant, because activation statistics stabilise at different rates for different schemes.",
+        "Quality evaluation is performed with a single evaluator across all variants, loading each published checkpoint. Perplexity on a held-out slice provides a dense, low-variance signal; a multiple-choice benchmark scored by log-likelihood provides a task-level signal that is insensitive to generation settings. Both metrics are reported as absolute values and as deltas against the reference.",
+        "Performance evaluation is deliberately kept in the deployment runtime, not in the training framework, so that speedups are not attributed to a runtime change. The reference measurement is produced by the same runtime with quantization disabled. Throughput, time to first token, inter-token latency, and peak device memory are recorded with warmup discarded and repetitions aggregated into percentiles.",
+        "Two failure modes are expected and are designed for explicitly. The first is silent scheme substitution: a consumer that does not recognise a configuration field may fall back to a default instead of failing, producing a model that behaves differently from the one that was evaluated. The pipeline therefore emits a schema version and the consumer validates it. The second is evaluation drift: if the tokenizer or chat template changes between variants, measured differences reflect input formatting rather than numerical precision. The evaluator version is therefore pinned for the whole comparison.",
+        "The pipeline is intentionally conservative: it publishes artefacts only when every gate passes, and it records failures with the same fidelity as successes. A variant that cannot be built on the target architecture is documented as an outcome, not hidden, because the negative result answers a question the team would otherwise re-ask."
+      ]
+    },
+    "D3": {
+      "title": "Research note: memory scaling of the attention key/value cache",
+      "language": "en",
+      "paragraphs": [
+        "Serving a transformer model requires storing attention state for every token already processed. This state, commonly called the key/value cache, grows linearly with sequence length and with the number of concurrent sequences. Its memory footprint is independent of weight precision, which is why reducing weight size does not proportionally increase how many requests a device can serve.",
+        "Consider a model with thirty-two layers, thirty-two attention heads, and a head dimension of one hundred and twenty-eight, storing keys and values in sixteen-bit precision. Each token consumes roughly 2 x layers x heads x head_dim x 2 bytes, which is on the order of half a megabyte per token when the arithmetic is carried out. A single sequence of thirty-two thousand tokens therefore occupies more than fifteen gigabytes, exceeding the weights of the model itself.",
+        "Three families of mitigation exist. The first reduces the number of cached elements, for example by sharing keys and values across groups of query heads, or by evicting state that is unlikely to be attended again. The second reduces the precision of each cached element, storing keys and values in eight-bit or four-bit containers with per-block scales. The third changes allocation and lifetime management, storing the cache in fixed-size blocks so that memory released by finished sequences can be reused immediately instead of leaving fragments.",
+        "Quantizing the cache interacts with accuracy differently from quantizing weights. Keys and values are produced per token and per layer, so a scale shared across a whole tensor must accommodate per-token variation. Per-block scales with a small block size bound the error more tightly, at the cost of storing scale metadata and performing more dequantization work in the attention kernel.",
+        "The practical consequence for capacity planning is that the memory budget must be divided among weights, cache, temporary activations, and framework overhead before any concurrency target is set. A useful procedure is to measure the unquantized model at a short context, then sweep context length and concurrency while recording peak memory and latency. The point at which latency degrades sharply usually corresponds to cache allocation exceeding the device budget, and it moves when cache precision changes."
+      ]
+    },
+    "D4": {
+      "title": "中文技术方案：单卡大模型量化与推理服务",
+      "language": "zh",
+      "paragraphs": [
+        "本方案描述在一张消费级显卡上部署八亿参数级指令模型的全过程，目标是同时给出可用的服务能力与可复现的量化结论。系统分为离线量化与在线服务两部分，二者通过不可变的模型产物解耦。",
+        "离线部分输入为半精度基础模型、校准语料与量化配方，输出为量化后的检查点、记录量化方案与模式版本的配置文件，以及包含精度与性能对照的报告。校准语料与评测语料必须来自不同来源，并记录各自的摘要值，以便任何后续比较都能追溯到确定的输入。",
+        "在线部分只负责加载产物并提供与主流接口兼容的 HTTP 服务。服务启动时校验收到的配置模式版本，遇到无法识别的字段时拒绝启动，而不是静默退回默认方案。这一条是防止行为漂移的关键，因为静默回退会让线上模型与评测过的模型不是同一个东西，而健康检查无法发现这种差异。",
+        "精度评测统一使用同一个评测器，直接加载各档位的检查点，避免不同评测器带来的系统性偏差。主指标为保留文本上的困惑度，辅以按对数似然打分的多选题子集。两个指标都同时报告绝对值与相对基准的变化量，并明确说明样本量所能分辨的最小差异，避免把噪声当成结论。",
+        "性能评测放在最终部署运行时中进行，基准档位使用同一运行时的未量化路径，确保任何加速都归因于量化本身而不是运行时切换。测量时丢弃预热轮次，重复多次后给出分位数，并记录温度、功耗与时钟，因为这些因素在移动端功耗受限的平台上会显著影响可比性。",
+        "显存预算需要同时考虑权重、键值缓存、临时激活与框架开销。权重位宽下降并不按比例提升并发能力，长上下文场景下键值缓存往往成为真正的瓶颈，因此必须做上下文长度与并发的扫描实验，并记录峰值显存与分位延迟的对应关系。"
+      ]
+    },
+    "D5": {
+      "title": "中文复盘：推理服务延迟劣化事件",
+      "language": "zh",
+      "paragraphs": [
+        "某个周四凌晨，推理服务出现分位延迟持续劣化。监控显示首 token 延迟与单 token 延迟同时上升，但错误率保持为零，因此在最初四十分钟内没有触发告警。值班工程师在用户反馈之后才开始排查。",
+        "第一轮假设是资源竞争。检查发现同一台机器上还有图形界面进程占用显卡，占用量很小，不足以解释延迟上升的幅度。第二轮假设是流量突增，核对请求速率与请求长度分布后排除。第三轮假设回到版本变更，比对镜像摘要确认为当前版本，但发现离线量化产物在前一天被重新生成过。",
+        "根因是离线流水线升级了量化工具，产出的检查点使用了服务端不认识的一个配置字段。服务端既没有报错也没有告警，而是采用了默认量化方案继续运行。模型仍然能生成文本，但解码行为与评测时不同，长文本尤其明显，因为默认方案对小批量解码的优化更保守。",
+        "两个因素让定位变慢。其一，预发布环境的健康检查只验证请求是否被应答，不验证内容是否与基线一致。其二，延迟面板按接口而非按模型版本切分，导致一段时间内把问题归因到了错误的发布批次。",
+        "修复分为三步。首先回滚到上一版检查点恢复服务；其次在启动路径增加模式校验，遇到未知字段直接拒绝启动；最后引入金标准回归测试，用固定提示词子集比较生成结果与存档基线的一致性，作为上线前的强制门禁。",
+        "后续改进包括三项。把离线产物纳入与镜像同等级的版本管理；在监控中按模型产物标识切分指标；以及把灰度流量从单一短提示词扩展为覆盖长短上下文的混合负载，因为短提示词无法暴露解码行为差异。"
+      ]
+    },
+    "D6": {
+      "title": "Code review notes on a serving-path refactor",
+      "language": "en",
+      "paragraphs": [
+        "The change under review replaces a single long function that assembled a generation request with a small pipeline of four stages: normalise the incoming payload, resolve sampling parameters, build the model input, and submit to the runtime. The stated motivation is testability, and the new structure does make individual stages unit-testable.",
+        "Stage one normalises the payload. The reviewer notes that it silently accepts a missing maximum length by substituting a default of five hundred and twelve tokens. This default is larger than the value used in the benchmark configuration, which means a client that omits the field is measured under a different workload. The comment asks for an explicit error or an explicit warning, not a silent substitution.",
+        "Stage two resolves sampling parameters. It reads temperature, top-p, and a seed, and applies them only when temperature exceeds zero. There is no validation that the combination is meaningful, so a caller that supplies a seed with greedy decoding receives no indication that the seed is ignored. The reviewer suggests documenting the precedence order in the stage docstring, because a future change could reorder the stages without noticing.",
+        "Stage three builds the model input. The refactor moved chat-template application into this stage. It applies the template with the generation prompt enabled, which is correct for generation, but the same function is also used by an evaluation path that expects no generation prompt. The reviewer flags this as the most serious issue in the change: a shared helper with two incompatible contracts, where the wrong contract produces plausible output rather than an error.",
+        "Stage four submits to the runtime and streams tokens back. Token timestamps are recorded before flushing to the client, which is the correct order for measuring inter-token latency, and the reviewer explicitly approves this detail because it is easy to get wrong and hard to detect afterwards.",
+        "The review concludes by requesting that the shared template helper be split into two functions, that the silent default be removed, and that a regression test compare generated tokens for a fixed prompt between the evaluation path and the serving path. It also notes that the refactor is otherwise behaviour-preserving and can proceed once those three items are addressed."
+      ]
+    }
+  },
+
+  "prompts": [
+    { "id": "S01", "bucket": "short", "language": "en", "category": "technical", "instruction": "Name three differences between INT8 and FP8 quantization." },
+    { "id": "S02", "bucket": "short", "language": "zh", "category": "technical", "instruction": "用一句话解释什么是 KV cache。" },
+    { "id": "S03", "bucket": "short", "language": "en", "category": "code", "instruction": "Write a Python one-liner that reverses a string." },
+    { "id": "S04", "bucket": "short", "language": "en", "category": "knowledge", "instruction": "What is the capital of Australia?" },
+    { "id": "S05", "bucket": "short", "language": "zh", "category": "translation", "instruction": "把这句话翻译成英文：今天的延迟比昨天低。" },
+    { "id": "S06", "bucket": "short", "language": "en", "category": "definition", "instruction": "Define time to first token in one sentence." },
+    { "id": "S07", "bucket": "short", "language": "en", "category": "reasoning", "instruction": "List the first five prime numbers and explain briefly why one is excluded." },
+    { "id": "S08", "bucket": "short", "language": "zh", "category": "reasoning", "instruction": "简述为什么激活值量化通常比权重量化更难。" },
+    { "id": "S09", "bucket": "short", "language": "en", "category": "code", "instruction": "Convert the hexadecimal number 0xFF to decimal, showing the arithmetic." },
+    { "id": "S10", "bucket": "short", "language": "en", "category": "language", "instruction": "Give a single-word antonym for the word sparse." },
+
+    { "id": "M01", "bucket": "medium", "language": "en", "category": "diagnosis", "doc_refs": ["D1"], "paragraph_slice": [3, 5],
+      "instruction": "The log excerpt below is from a service that is running the checkpoint described in the document above. Identify the most likely cause of the failure and state one control that would have prevented it.\n\n2026-09-12 21:16:34.902 WARN unknown scheme field value, falling back to default scheme\n2026-09-12 21:16:35.117 INFO model loaded, 42 tensors quantized, 0 errors\n2026-09-12 21:17:41.030 WARN ttft p99 exceeded 800 ms threshold" },
+
+    { "id": "M02", "bucket": "medium", "language": "en", "category": "code", "doc_refs": ["D2"], "paragraph_slice": [3, 5],
+      "instruction": "Explain what this helper computes, identify one edge case it handles incorrectly, and propose a corrected version.\n\ndef percentile(values, q):\n    values = sorted(values)\n    index = int(len(values) * q)\n    return values[index]\n\nCallers use q in {0.5, 0.95, 0.99} with 30 prompts x 5 repetitions." },
+
+    { "id": "M03", "bucket": "medium", "language": "zh", "category": "design", "doc_refs": ["D4"], "paragraph_slice": [1, 4],
+      "instruction": "请指出上面方案中的主要风险，并给出两条具体的整改建议。补充背景：离线流水线每次生成产物后直接推送到对象存储，服务端启动时拉取最新产物并加载，只校验文件存在与张量形状是否匹配。" },
+
+    { "id": "M04", "bucket": "medium", "language": "en", "category": "analysis", "doc_refs": ["D2"], "paragraph_slice": [4, 6],
+      "instruction": "Interpret these measurements and state clearly what conclusion is and is not supported.\n\nA (bf16): ttft p50 210 ms, tpot p50 34 ms, peak 17.2 GB\nB (w8a8): ttft p50 165 ms, tpot p50 22 ms, peak 11.4 GB\nC (w8a8 + fp8 kv cache): ttft p50 168 ms, tpot p50 23 ms, peak 9.1 GB\nContext 4096, batch 1, 30 prompts x 5 repetitions, warmup 3 discarded.\nPerplexity: A 8.31, B 8.44, C 8.52." },
+
+    { "id": "M05", "bucket": "medium", "language": "en", "category": "code", "doc_refs": ["D2"], "paragraph_slice": [4, 6],
+      "instruction": "This snippet is meant to measure latency excluding warmup. Find the defect and explain how it distorts the reported numbers.\n\nstart = time.perf_counter()\nfor i, prompt in enumerate(prompts * reps):\n    out = model.generate(prompt, max_new_tokens=128)\n    if i >= warmup_iters:\n        latencies.append(time.perf_counter() - start)\n        start = time.perf_counter()\n\nWarmup is intended to be 3 iterations, repetitions 5, prompts 30. Reported statistic: mean." },
+
+    { "id": "M06", "bucket": "medium", "language": "zh", "category": "translation", "doc_refs": ["D4"], "paragraph_slice": [3, 6],
+      "instruction": "请把上面关于性能评测与显存预算的两段内容翻译成英文，保持术语准确，不要增删信息。" },
+
+    { "id": "M07", "bucket": "medium", "language": "en", "category": "reasoning", "doc_refs": ["D3"], "paragraph_slice": [0, 2],
+      "instruction": "Using the arithmetic above, compute how many gigabytes a single sequence of 32768 tokens occupies, and how many such sequences fit in a 24 GB budget that must also hold 9 GB of weights and 2 GB of runtime overhead. Show each step." },
+
+    { "id": "M08", "bucket": "medium", "language": "en", "category": "code", "doc_refs": ["D1"], "paragraph_slice": [2, 4],
+      "instruction": "Rewrite this configuration loader so that unknown fields cause a hard failure, and explain the trade-off you are accepting.\n\ndef load_config(path):\n    cfg = json.load(open(path))\n    return {'scheme': cfg.get('quant_scheme', 'w8a8'), 'group': cfg.get('group_size', 128)}\n\nSupported schemes are {w8a8, fp8, w4a16} only; two internal scripts rely on the current defaulting." },
+
+    { "id": "M09", "bucket": "medium", "language": "zh", "category": "writing", "doc_refs": ["D5"], "paragraph_slice": [2, 5],
+      "instruction": "请根据上面的复盘内容写一段不超过 150 字的对外说明，要求包含事件时间、根因、影响范围与改进措施四项要素，不要使用内部代号。" },
+
+    { "id": "M10", "bucket": "medium", "language": "en", "category": "comparison", "doc_refs": ["D3"], "paragraph_slice": [2, 4],
+      "instruction": "Compare the two approaches described above for reducing cache memory and recommend one for a single 24 GB accelerator, with justification. Constraints: context 8192, accuracy budget +2 percent relative perplexity, latency budget +10 percent on inter-token latency." },
+
+    { "id": "L01", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D1", "D2"], "instruction": "Read both documents. Write a five-bullet summary for an engineering newsletter covering impact, root cause, contributing factors, and remediation, then state which of the two documents describes the stronger preventive control and why." },
+    { "id": "L02", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D1", "D3"], "instruction": "Read both documents. The first describes a serving failure, the second a memory phenomenon. Explain whether the failure could have been caused by the phenomenon, and justify your answer with evidence from both texts." },
+    { "id": "L03", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D2", "D3"], "instruction": "Read both documents. Identify three places where the pipeline design would benefit from the memory analysis, and for each state the concrete change you would make." },
+    { "id": "L04", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D2", "D1"], "instruction": "Read both documents. Produce an ordered implementation checklist of nine to twelve verifiable steps that would prevent the failure described in the second document while satisfying the pipeline described in the first." },
+    { "id": "L05", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D3", "D2"], "instruction": "Read both documents. Explain the memory arithmetic to a software engineer who has never worked on inference, without omitting the formula, and state which measurement in the second document would reveal a memory regression." },
+    { "id": "L06", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D3", "D1"], "instruction": "Read both documents. Write a single-paragraph abstract of at most 120 words that covers the memory phenomenon and the operational lesson, and list two questions the pair leaves unanswered." },
+    { "id": "L07", "bucket": "long", "language": "zh", "category": "long-context", "doc_refs": ["D4", "D5"], "instruction": "请阅读上面两份文档，提出三条改进建议。每条需说明它解决什么问题、实现代价是什么，以及如何验证它确实生效。" },
+    { "id": "L08", "bucket": "long", "language": "zh", "category": "long-context", "doc_refs": ["D5", "D4"], "instruction": "请综合两份文档，写一份面向非技术同事的简要通报，说明发生了什么、影响范围、已经采取的改进措施，以及方案层面还要补哪些环节。" },
+    { "id": "L09", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D6", "D1"], "instruction": "Read both documents. Which review comment is the most serious, and what regression test would you add to prevent that class of defect from recurring in either codebase?" },
+    { "id": "L10", "bucket": "long", "language": "en", "category": "long-context", "doc_refs": ["D6", "D3"], "instruction": "Read both documents. Summarise the review in three bullets, then state whether the change should be approved, rejected, or approved with conditions, and name the one comment that must be resolved first." }
+  ]
+}
