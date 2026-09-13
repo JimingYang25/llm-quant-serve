@@ -49,9 +49,11 @@ Define what is measured, how, at which layer, and with what tolerance, so that t
 | TTFT | Request submission → first output token | **HTTP client (primary)**; engine-reported value recorded as a secondary column | p50, p95, p99 |
 | TPOT / ITL | Mean gap between successive output tokens | same | p50, p95, p99 |
 | Throughput | Generated tokens per second | same | **single-stream and aggregate reported separately** |
-| Peak VRAM | Maximum device memory during the run | **process NVML sampling** (decision 7); `nvidia-smi` as cross-check | max |
+| Peak VRAM | Maximum device memory during the run | **NVML device peak minus idle baseline** (decision 7, as amended); per-process figure recorded when the platform reports it | max |
 
 **Decision 7 — justification (VRAM source).** `torch.cuda.max_memory_allocated` observes only the PyTorch allocator. TensorRT-LLM allocates engine and KV-cache memory outside it, so that metric would report lower values for the quantized tiers for reasons unrelated to quantization — a systematic bias in the same direction the experiment is trying to measure. NVML sampling is slightly coarser but applies identically to every runtime. **Uniformity across runtimes takes precedence over per-runtime precision.**
+
+**Decision 7 — amendment, measured (2026-09-13).** Per-process NVML accounting is **not available under WSL2 driver passthrough**: `nvmlDeviceGetComputeRunningProcesses` returned no entry for our own PID while the device-wide figure read 16.56 GiB. The authoritative figure is therefore **device-wide peak minus the idle baseline captured before loading** — measured **16.56 − 0.96 = 15.60 GiB** for BF16, against 15.25 GiB of weights (consistent, as expected at batch 1). The method is identical for every tier, which preserves exactly the comparability this decision exists to protect. The per-process figure is still recorded when the platform reports it. The result field is `peak_vram_gib`, carrying its own `method` and `limitation` strings so a reader never has to infer how the number was obtained.
 
 **Prohibited:** reporting a mean without percentiles; presenting aggregate throughput as single-stream; mixing measurement layers across tiers.
 
