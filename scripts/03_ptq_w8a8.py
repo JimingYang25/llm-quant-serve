@@ -30,30 +30,35 @@ Two design decisions worth understanding:
 """
 from __future__ import annotations
 
-import argparse
-import hashlib
-import importlib.util
-import json
+# ---------------------------------------------------------------------------
+# Environment MUST be configured before torch/transformers are imported.
+# huggingface_hub reads HF_ENDPOINT at import time, and `transformers` imports it,
+# so setting this later has no effect — the requests keep going to huggingface.co,
+# which is unreachable here, producing five retry cycles per dataset and a fallback
+# to the local cache. Measured the hard way: setting it after the imports silently
+# did nothing.
+# ---------------------------------------------------------------------------
 import os
-import sys
-import time
-from datetime import datetime, timezone
-from pathlib import Path
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
+import argparse  # noqa: E402
+import hashlib  # noqa: E402
+import importlib.util  # noqa: E402
+import json  # noqa: E402
+import sys  # noqa: E402
+import time  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+import torch  # noqa: E402
+from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402
 
 # MUST precede any modelopt import: makes ModelOpt's CUDA extensions buildable rather
 # than silently falling back to the CPU implementation (see the module for the
 # two-defect diagnosis). Without it, FP8 produces NaN and INT8 numbers are suspect.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import modelopt_ext_patch  # noqa: E402,F401
-
-# This host reaches the Hugging Face Hub ONLY through the mirror: direct
-# huggingface.co resets the connection (verified, NAT mode). Setting this here rather
-# than asking the caller to remember it — a forgotten environment variable surfaces as
-# five retry cycles and a confusing traceback, not as a clear error.
-os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 
 REPO = Path(__file__).resolve().parent.parent
 MODEL_DIR = Path("/home/jiming/models/Qwen3-8B")

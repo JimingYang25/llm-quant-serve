@@ -1,0 +1,72 @@
+{
+  "tier": "fp8",
+  "method": "fp8",
+  "recipe": "FP8_DEFAULT_CFG",
+  "kind": "quantized_accuracy",
+  "timestamp": "2026-09-14T10:25:28+00:00",
+  "fingerprint": {
+    "torch": "2.9.1+cu130",
+    "transformers": "4.57.3",
+    "nvidia_modelopt": "0.37.0",
+    "gpu_name": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "pip_freeze_sha256": "4ffdeda7417561aed00a937ef741a28fb88c366d7f5d082a36be531c386d02c1",
+    "weights_digest": "5acd627312ea748b85f2431045c626b067062debaaf31aba3ad2bcfaf38f58aa",
+    "prompt_set_sha256": "77763576f2f044c8128fe5e3302a2def6dec52742cc2a4b3a8e93860c7674b0e"
+  },
+  "config": {
+    "calibration": {
+      "dataset": "tatsu-lab/alpaca",
+      "config": null,
+      "split": "train",
+      "n_samples": 128,
+      "corpus_sha256": "1e752ba4eb911d46ccc957f269830c9e61d930b2185e156f63b48a5d92ed6a57",
+      "chars": 66657,
+      "cached_to": "/home/jiming/llm-quant-serve/data/calibration/calib_128.json"
+    },
+    "calib_seq_len": 512,
+    "smoke": false,
+    "quantization_seconds": 35.1,
+    "export": "11.2s -> /home/jiming/models/Qwen3-8B-fp8-modelopt"
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 9.343381577222745,
+      "tokens_scored": 32752,
+      "mean_nll": 2.2346682399511337,
+      "corpus_sha256": "b0687731095d9db32a47c1012982b82dfc7110e05c7b835cf5a5751347c364ed"
+    },
+    "mmlu": {
+      "accuracy": 0.618,
+      "n_questions": 500,
+      "n_correct": 309,
+      "chance_level": 0.25,
+      "standard_error": 0.02172905888436036,
+      "elapsed_s": 461.7761543850065,
+      "sample_sha256": "f96cbd836647abb9a76b241f7eb4a51c396c34c92953b72b04e2bb40b4e13453"
+    }
+  },
+  "oracle_file": "bf16_20260914T072304Z_oracle.json",
+  "gate": {
+    "status": "PASS",
+    "comparable": true,
+    "not_comparable_because": [],
+    "checks": [
+      {
+        "metric": "perplexity",
+        "oracle": 9.318950097032179,
+        "measured": 9.343381577222745,
+        "delta_rel_pct": 0.262,
+        "limit_pct": 2.0,
+        "pass": true
+      },
+      {
+        "metric": "mmlu",
+        "oracle": 0.612,
+        "measured": 0.618,
+        "delta_pp": 0.6,
+        "limit_drop_pp": 4.0,
+        "pass": true
+      }
+    ]
+  }
+}
