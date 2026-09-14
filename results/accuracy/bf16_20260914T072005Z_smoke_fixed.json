@@ -1,0 +1,81 @@
+{
+  "tier": "bf16",
+  "evaluator": "scripts/07_eval_accuracy.py (native; lm-eval-harness not used)",
+  "timestamp": "2026-09-14T07:18:58+00:00",
+  "fingerprint": {
+    "torch": "2.9.1+cu130",
+    "cuda_rt": "13.0",
+    "transformers": "4.57.3",
+    "datasets": "3.1.0",
+    "nvidia_modelopt": "0.37.0",
+    "gpu_name": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "compute_capability": "sm_120",
+    "pip_freeze_sha256": "4ffdeda7417561aed00a937ef741a28fb88c366d7f5d082a36be531c386d02c1",
+    "weights_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+    "weights_digest": "5acd627312ea748b85f2431045c626b067062debaaf31aba3ad2bcfaf38f58aa"
+  },
+  "config": {
+    "model_dir": "/home/jiming/models/Qwen3-8B",
+    "dtype": "bfloat16",
+    "mmlu_limit": 20,
+    "mmlu_seed": 0,
+    "mmlu_convention": "chat_template_with_generation_prompt; sum_logprob_no_normalisation",
+    "ppl_dataset": [
+      "Salesforce/wikitext",
+      "wikitext-103-raw-v1",
+      "test"
+    ],
+    "ppl_window_tokens": 2048,
+    "ppl_token_budget": 4096,
+    "smoke": true
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 10.440671358768007,
+      "tokens_scored": 6141,
+      "mean_nll": 2.345708886782328,
+      "corpus_sha256": "a3e6740e333189e871be7b88ed263b2bb1b06823d979bf7cfe82aab88a80934b",
+      "dataset": [
+        "Salesforce/wikitext",
+        "wikitext-103-raw-v1",
+        "test"
+      ]
+    },
+    "mmlu": {
+      "accuracy": 0.45,
+      "n_questions": 20,
+      "n_correct": 9,
+      "chance_level": 0.25,
+      "standard_error": 0.11124297730643495,
+      "elapsed_s": 3.959716314013349,
+      "predictions": [
+        3,
+        1,
+        0,
+        0,
+        2,
+        0,
+        3,
+        3,
+        3,
+        0,
+        2,
+        1,
+        2,
+        1,
+        3,
+        0,
+        2,
+        1,
+        1,
+        3
+      ],
+      "sample_sha256": "f372d4416e6416059d28e7bfde5283b23670f0eff9b89ac657ff964e4cbed9ff",
+      "dataset": [
+        "cais/mmlu",
+        "all",
+        "test"
+      ]
+    }
+  }
+}
