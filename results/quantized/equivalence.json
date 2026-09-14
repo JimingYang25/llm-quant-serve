@@ -1,0 +1,23 @@
+{
+  "candidate": "/home/jiming/models/Qwen3-8B-fp8-modelopt",
+  "reference": "/home/jiming/models/Qwen3-8B",
+  "size_gib": {
+    "candidate": 8.787774831056595,
+    "reference": 15.256476379930973
+  },
+  "speed_tok_s": {
+    "candidate": 76.19092737983117,
+    "reference": 45.84480489139582
+  },
+  "prefix_agreement": {
+    "first_divergence_positions": [
+      25,
+      21,
+      4
+    ],
+    "mean_prefix_tokens_matched": 16.666666666666668,
+    "raw_token_agreement_pct": 26.041666666666668
+  },
+  "max_tokens": 64,
+  "kv_fraction": 0.35
+}

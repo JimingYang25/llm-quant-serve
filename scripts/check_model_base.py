@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 t0 = time.time()
 tok = AutoTokenizer.from_pretrained("/home/jiming/models/Qwen3-8B")
 model = AutoModelForCausalLM.from_pretrained(
-    "/home/jiming/models/Qwen3-8B", dtype=torch.bfloat16, device_map="cuda"
+    "/home/jiming/models/Qwen3-8B-fp8-modelopt", dtype=torch.bfloat16, device_map="cuda"
 )
 print("load %.1fs" % (time.time() - t0))
 

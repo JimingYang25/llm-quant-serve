@@ -116,9 +116,22 @@ pip freeze sha256              prompt set sha256
 Accuracy is measured by **one evaluator only** — HF `transformers` + `lm-eval-harness` — loading each tier's ModelOpt checkpoint. TensorRT engines cannot be evaluated this way, so:
 
 - **Accuracy column:** checkpoints, one evaluator, all tiers.
-- **Engine verification:** run a fixed prompt subset through the engine and compare generated tokens against the same checkpoint run, requiring **≥ 95 % token agreement** (the threshold itself is provisional and is revisited at M5).
+- **Engine verification:** a *separate* equivalence test, defined below.
 
-This keeps accuracy and performance measurements from contaminating one another.
+**AMENDMENT, measured (2026-09-14): raw token agreement is NOT a valid equivalence metric.**
+
+The original criterion ("≥ 95 % token agreement between engine output and checkpoint output") was written before it was tested, and the test refuted it. Feeding the same three prompts greedily through the FP8 checkpoint and the BF16 reference under TRT-LLM gave:
+
+```
+common prefix per prompt : 25, 21, 4 tokens (of 64 generated)
+raw token agreement      : 26.0 %     ← would have been read as failure
+```
+
+Yet both outputs are coherent English that answers the question, and they share a long identical prefix before diverging at a single word choice. The cause is structural: **greedy decoding is a feedback loop.** One flipped argmax early changes the input for every subsequent step, so after the first divergence the sequences never re-converge. Raw agreement therefore measures *where divergence happened*, not *how wrong the model is*, and it decays toward chance as generation length grows.
+
+**Replacement metric:** teacher-forced per-position agreement — run both models over the *same* token sequence and compare the argmax (or top-k) at each position. Divergence cannot compound, so the resulting number is a property of the weights rather than of the feedback loop. Practical implementation: score a fixed reference continuation rather than generating freely. Threshold to be set once measured; the metric, not the number, is what changed.
+
+**Second consequence, also recorded:** the M2 accuracy gate was measured on the **ModelOpt fake-quant path**, while the deployed artifact is the **checkpoint executed by TRT-LLM**. These are not guaranteed to be numerically identical (activation-quantization granularity and static-vs-dynamic input scales may differ between the two). Engine-level accuracy is therefore an M5 measurement, and the report must not present the M2 numbers as engine accuracy.
 
 **Decision 15 — the latency oracle runs in the same execution path as the tiers (structural).**
 
