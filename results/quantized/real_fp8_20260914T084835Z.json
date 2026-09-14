@@ -1,0 +1,57 @@
+{
+  "tier": "real_fp8",
+  "method": "fp8",
+  "recipe": "FP8_DEFAULT_CFG",
+  "kind": "quantized_accuracy",
+  "timestamp": "2026-09-14T08:48:35+00:00",
+  "fingerprint": {
+    "torch": "2.9.1+cu130",
+    "transformers": "4.57.3",
+    "nvidia_modelopt": "0.37.0",
+    "gpu_name": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "pip_freeze_sha256": "4ffdeda7417561aed00a937ef741a28fb88c366d7f5d082a36be531c386d02c1",
+    "weights_digest": "5acd627312ea748b85f2431045c626b067062debaaf31aba3ad2bcfaf38f58aa",
+    "prompt_set_sha256": "77763576f2f044c8128fe5e3302a2def6dec52742cc2a4b3a8e93860c7674b0e"
+  },
+  "config": {
+    "calibration": {
+      "dataset": "tatsu-lab/alpaca",
+      "config": null,
+      "split": "train",
+      "n_samples": 128,
+      "corpus_sha256": "1e752ba4eb911d46ccc957f269830c9e61d930b2185e156f63b48a5d92ed6a57",
+      "chars": 66657
+    },
+    "calib_seq_len": 512,
+    "smoke": false,
+    "quantization_seconds": 33.7,
+    "export": "8.9s -> /home/jiming/models/Qwen3-8B-real_fp8-modelopt"
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 9.343381577222745,
+      "tokens_scored": 32752,
+      "mean_nll": 2.2346682399511337,
+      "corpus_sha256": "b0687731095d9db32a47c1012982b82dfc7110e05c7b835cf5a5751347c364ed"
+    },
+    "mmlu": null
+  },
+  "oracle_file": "bf16_20260914T072304Z_oracle.json",
+  "gate": {
+    "status": "PROVISIONAL",
+    "comparable": false,
+    "not_comparable_because": [
+      "partial evaluation (--ppl-only/--mmlu-only)"
+    ],
+    "checks": [
+      {
+        "metric": "perplexity",
+        "oracle": 9.318950097032179,
+        "measured": 9.343381577222745,
+        "delta_rel_pct": 0.262,
+        "limit_pct": 2.0,
+        "pass": true
+      }
+    ]
+  }
+}

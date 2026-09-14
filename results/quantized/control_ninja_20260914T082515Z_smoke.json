@@ -1,0 +1,69 @@
+{
+  "tier": "control_ninja",
+  "method": "int8",
+  "recipe": "INT8_DEFAULT_CFG",
+  "kind": "quantized_accuracy",
+  "timestamp": "2026-09-14T08:25:15+00:00",
+  "fingerprint": {
+    "torch": "2.9.1+cu130",
+    "transformers": "4.57.3",
+    "nvidia_modelopt": "0.37.0",
+    "gpu_name": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "pip_freeze_sha256": "4ffdeda7417561aed00a937ef741a28fb88c366d7f5d082a36be531c386d02c1",
+    "weights_digest": "5acd627312ea748b85f2431045c626b067062debaaf31aba3ad2bcfaf38f58aa",
+    "prompt_set_sha256": "77763576f2f044c8128fe5e3302a2def6dec52742cc2a4b3a8e93860c7674b0e"
+  },
+  "config": {
+    "calibration": {
+      "dataset": "tatsu-lab/alpaca",
+      "config": null,
+      "split": "train",
+      "n_samples": 64,
+      "corpus_sha256": "37806675425256da30403adc910733bc569c1e2fe15963059c97b2da27fd2a93",
+      "chars": 35285
+    },
+    "calib_seq_len": 512,
+    "smoke": true,
+    "quantization_seconds": 19.2,
+    "export": "skipped"
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 9.170541401297605,
+      "tokens_scored": 4094,
+      "mean_nll": 2.2159963250160217,
+      "corpus_sha256": "6197c251d10338ea2d47622452387429114733ada4bc236ad45baef03e9b8037"
+    },
+    "mmlu": {
+      "accuracy": 0.45,
+      "n_questions": 20,
+      "n_correct": 9,
+      "chance_level": 0.25,
+      "standard_error": 0.11124297730643495,
+      "elapsed_s": 4.325154824007768,
+      "sample_sha256": "f372d4416e6416059d28e7bfde5283b23670f0eff9b89ac657ff964e4cbed9ff"
+    }
+  },
+  "oracle_file": "bf16_20260914T072304Z_oracle.json",
+  "gate": {
+    "status": "FAIL",
+    "checks": [
+      {
+        "metric": "perplexity",
+        "oracle": 9.318950097032179,
+        "measured": 9.170541401297605,
+        "delta_rel_pct": -1.593,
+        "limit_pct": 2.0,
+        "pass": true
+      },
+      {
+        "metric": "mmlu",
+        "oracle": 0.612,
+        "measured": 0.45,
+        "delta_pp": -16.2,
+        "limit_drop_pp": 4.0,
+        "pass": false
+      }
+    ]
+  }
+}

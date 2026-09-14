@@ -165,7 +165,11 @@ Every file under `results/` must be self-describing:
 | Prompt-set hash | present and matching the committed set | M1 |
 | `pip check` | only the documented deviation **D1** | every milestone |
 | Engine equivalence | ≥ 95 % token agreement with the checkpoint | M5 |
-| Quantization accuracy gates | **deferred** — thresholds set once the BF16 oracle exists | M2 |
+| **Quantization — perplexity** | relative increase ≤ **2 %** vs the BF16 oracle (9.3190 → must stay ≤ **9.505**); dense metric over 32 752 scored tokens, resolves sub-percent change | **M2** |
+| **Quantization — MMLU** | drop ≤ **4 percentage points** vs the oracle (0.6120 → must stay ≥ **0.572**); coarse guard only | **M2** |
+| Quantization — latency / VRAM | measured and **reported but not gated** until M5, where the deployment runtime is in play | M2 |
+
+**Why the MMLU gate is 4 pp and not 1 pp (measured, not assumed).** With N = 500 the oracle's standard error is 0.0218, giving a 95 % resolution of **±4.3 percentage points** (`results/accuracy/bf16_*_oracle.json`). A 1–2 pp MMLU drop is therefore *statistically invisible* at this sample size, and gating on it would mean gating on noise. Only drops larger than the noise floor are meaningful. **Perplexity carries the real gate** — it is dense and low-variance — while MMLU exists to catch a catastrophic failure that perplexity might miss.
 
 ---
 
