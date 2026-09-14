@@ -34,6 +34,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -48,10 +49,17 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import modelopt_ext_patch  # noqa: E402,F401
 
+# This host reaches the Hugging Face Hub ONLY through the mirror: direct
+# huggingface.co resets the connection (verified, NAT mode). Setting this here rather
+# than asking the caller to remember it — a forgotten environment variable surfaces as
+# five retry cycles and a confusing traceback, not as a clear error.
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
 REPO = Path(__file__).resolve().parent.parent
 MODEL_DIR = Path("/home/jiming/models/Qwen3-8B")
 ACCURACY_DIR = REPO / "results" / "accuracy"
 OUT_DIR = REPO / "results" / "quantized"
+CALIB_CACHE = REPO / "data" / "calibration"
 
 # ---- M2 gates, agreed before the measurement existed -----------------------
 # Perplexity is dense (32k tokens) and can resolve sub-percent change; MMLU at
@@ -92,6 +100,22 @@ def sha256_text(s: str) -> str:
 # Calibration corpus
 # ==========================================================================
 def load_calibration_texts(n: int) -> tuple[list[str], dict]:
+    """Load the calibration corpus, caching it locally after the first download.
+
+    Caching matters for more than speed. The calibration corpus is part of the
+    measurement: its hash is recorded in the result file and it must be the SAME
+    corpus across every tier, or the tiers are not comparable. Re-downloading each
+    run leaves that identity to the network, and a dataset revision change would
+    silently alter the quantization scales. After the first fetch the text lives in
+    `data/calibration/` and is reloaded from disk.
+    """
+    cache = CALIB_CACHE / f"calib_{n}.json"
+    if cache.exists():
+        d = json.loads(cache.read_text(encoding="utf-8"))
+        print(f"  calibration cache hit: {cache} ({len(d['texts'])} samples, "
+              f"sha={d['meta']['corpus_sha256'][:16]}…)")
+        return d["texts"], d["meta"]
+
     from datasets import load_dataset
     for name, config, split in CALIB_CANDIDATES:
         try:
@@ -108,11 +132,16 @@ def load_calibration_texts(n: int) -> tuple[list[str], dict]:
                     break
             if rows:
                 blob = "\n\n".join(rows)
-                return rows, {
+                meta = {
                     "dataset": name, "config": config, "split": split,
                     "n_samples": len(rows), "corpus_sha256": sha256_text(blob),
-                    "chars": len(blob),
+                    "chars": len(blob), "cached_to": str(cache),
                 }
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                cache.write_text(json.dumps({"texts": rows, "meta": meta}, indent=1),
+                                 encoding="utf-8")
+                print(f"  calibration cached -> {cache}")
+                return rows, meta
         except Exception as e:
             print(f"  calibration source {name} unavailable ({type(e).__name__}); trying next")
     raise RuntimeError("no calibration corpus could be loaded")
