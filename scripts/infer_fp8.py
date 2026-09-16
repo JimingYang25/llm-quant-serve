@@ -94,6 +94,10 @@ def main() -> int:
         assistant_text = out.text
         n = len(out.token_ids)
 
+        # 'stop'   = the model emitted its end-of-turn token (<|im_end|>) — it is done
+        # 'length' = it hit max_tokens and was cut off mid-sentence
+        print(f"finish_reason: {out.finish_reason}")
+
         conversation.append({"role": "assistant", "content": assistant_text})
 
         print("=" * 68)
