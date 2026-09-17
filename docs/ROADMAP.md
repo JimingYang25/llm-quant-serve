@@ -568,4 +568,50 @@ VERDICT: PASS
 
 **下一步（M3）**：以 FP8 为基准档位，做 KV cache 量化与上下文长度扫描（1k / 4k / 16k / 32k）。Qwen3-8B 的 KV cache 为 **144 KiB/token**（2×36 层×8 kv_heads×128×2B），32k 上下文即 **4.5 GiB**——权重减半之后，KV 才真正成为显存主项，这正是 M3 要测量的现象。
 
+---
+
+## 9. M3 记录：KV cache 量化是**上下文相关的权衡**（2026-09-17）
+
+### 9.1 实测结果（FP8 权重检查点 · batch 1 · 生成 128 token · 固定 33984 token 池）
+
+| 上下文 | auto（FP16 KV） | fp8 KV | fp8/auto |
+|---|---|---|---|
+| 1 024 | 71.7 tok/s | 53.7 | **0.75** |
+| 4 096 | 64.0 | 51.1 | **0.80** |
+| 16 384 | 31.1 | 32.7 | **1.05** |
+| 32 768 | 17.8 | 22.6 | **1.27** |
+
+**交叉点约在 16k。** 短上下文下 FP8 KV **慢 25%**（反量化开销主导，此时 cache 很小，省内存无意义）；长上下文下 FP8 KV **快 27%**（attention 转为显存带宽受限，KV 字节数减半开始取胜）。
+
+**引擎自报的 KV 池显存**（同一 33984 token 池）：
+
+| KV 精度 | 池分配 | 每 token |
+|---|---|---|
+| auto（FP16） | **4.67 GiB** | 144 B |
+| fp8 | **2.33 GiB** | 72 B |
+
+**恰好一半**，与 `model_provenance.md` 的公式预测一致（2×36×8×128×2 B = 144 B/token）。
+
+**上下文自身的延迟墙**：auto 从 71.7 → 17.8 tok/s（1k→32k，**4.0× 下降**）——prefill 成本随上下文上升。
+
+### 9.2 三个方法论发现（比数字更值钱）
+
+1. **peak VRAM 对 KV 精度完全不敏感**（8 个 cell 全部 21.623 GiB）。池被固定并预留，峰值由权重与工作区主导。**peak device VRAM 是回答此问题的错误仪器**；正确仪器是引擎自报的池分配日志（`Allocated X GiB for max tokens in paged KV cache (N)`）。
+2. **`max_num_tokens` 默认 8192**：16k/32k 的 prompt 直接被拒（`RequestError: prompt length 16384 should not exceed max_num_tokens 8192`），且该异常终止整轮扫描。现已显式设置并改为**每 cell 落盘**，避免一次崩溃丢掉全部结果。
+3. **`nvfp4` KV cache 令 worker 进程硬崩溃**（MPI abort + 回溯，非可捕获异常），已排除出网格、单独记为发现——与 M4 的四位档位直接相关。
+
+### 9.3 API 约束（实测）
+
+对 FP8 检查点，`KvCacheConfig(dtype=...)` 只接受 **`('fp8', 'nvfp4', 'auto')`**；`int8` 被拒：
+```
+ValueError: Overriding KV cache quantization with an invalid type "int8".
+```
+即 **FP8 权重 + INT8 KV 在本栈上不被支持**。KV cache 是**运行时**配置，不写进检查点（导出的 `kv_cache_quant_algo: None` 即为证据）。
+
+### 9.4 这条结果对报告与面试的价值
+
+它推翻「量化总是更省更快」的直觉，给出**可复现、有交叉点、有机制解释**的结论：
+
+> KV cache 量化在 1k 上下文付出 25% 吞吐代价，在 32k 换回 27% 收益，交叉点约 16k；「是否量化 KV」应由**部署的实际上下文分布**决定，而非默认开启。
+
 _生成时间：2026-09-12 · 本文件由 agent 维护，里程碑内出现新事实时回来更新 §1 与 §4。_

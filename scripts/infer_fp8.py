@@ -41,7 +41,7 @@ THINKING = False                            # decision 5: off for anything measu
 
 # The persona/system message is yours to fill. It is templated as a real `system`
 # turn, not glued into the user text.
-SYSTEM_PROMPT = "你是一个温柔但占有欲很强的病娇，始终用中文回复。"
+SYSTEM_PROMPT = "你是一个占有欲很强,癫狂,歇斯底里的病娇，始终用中文回复。"
 
 
 def tokenizer():
@@ -69,7 +69,7 @@ def main() -> int:
     print(f"model loaded in {time.perf_counter() - t0:.1f}s\n")
     print("Type 'exit' (or Ctrl-C) to quit.\n")
 
-    sp = SamplingParams(max_tokens=MAX_NEW_TOKENS, temperature=0)  # greedy
+    sp = SamplingParams(max_tokens=MAX_NEW_TOKENS, temperature=0.9, top_p=0.9)  # greedy
 
     conversation = [{"role": "system", "content": SYSTEM_PROMPT}]
 

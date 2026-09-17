@@ -1,0 +1,92 @@
+{
+  "tier": "fp8",
+  "kind": "kv_cache_sweep",
+  "timestamp": "2026-09-17T08:18:00+00:00",
+  "model": "/home/jiming/models/Qwen3-8B-fp8-modelopt",
+  "kv_pool_tokens": 34000,
+  "kv_bytes_per_token_fp16": 144,
+  "max_new_tokens": 128,
+  "smoke": false,
+  "cells": [
+    {
+      "kv_dtype": "auto",
+      "context_tokens": 1024,
+      "generated": 128,
+      "tok_s": 71.7,
+      "wall_s": 1.79,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.0
+    },
+    {
+      "kv_dtype": "auto",
+      "context_tokens": 4096,
+      "generated": 128,
+      "tok_s": 64.0,
+      "wall_s": 2.0,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.001
+    },
+    {
+      "kv_dtype": "auto",
+      "context_tokens": 16384,
+      "generated": 128,
+      "tok_s": 31.1,
+      "wall_s": 4.11,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.002
+    },
+    {
+      "kv_dtype": "auto",
+      "context_tokens": 32768,
+      "generated": 128,
+      "tok_s": 17.8,
+      "wall_s": 7.21,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.004
+    },
+    {
+      "kv_dtype": "fp8",
+      "context_tokens": 1024,
+      "generated": 128,
+      "tok_s": 53.7,
+      "wall_s": 2.38,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.0
+    },
+    {
+      "kv_dtype": "fp8",
+      "context_tokens": 4096,
+      "generated": 128,
+      "tok_s": 51.1,
+      "wall_s": 2.5,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.001
+    },
+    {
+      "kv_dtype": "fp8",
+      "context_tokens": 16384,
+      "generated": 128,
+      "tok_s": 32.7,
+      "wall_s": 3.92,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.002
+    },
+    {
+      "kv_dtype": "fp8",
+      "context_tokens": 32768,
+      "generated": 128,
+      "tok_s": 22.6,
+      "wall_s": 5.65,
+      "finish_reason": "length",
+      "peak_vram_gib": 21.623,
+      "predicted_kv_gib": 0.004
+    }
+  ]
+}
