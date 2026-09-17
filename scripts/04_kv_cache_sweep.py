@@ -63,39 +63,64 @@ FILLER = (
 class VramSampler(threading.Thread):
     """Device-wide peak VRAM via NVML; per-process accounting is unavailable in WSL2."""
 
-    def __init__(self) -> None:
+    def __init__(self, poll_interval: float = 0.02) -> None:
         super().__init__(daemon=True)
-        self._stop = threading.Event()   # NOTE: must not be named `_stop`
+        self._stop_event = threading.Event()
+        self._poll_interval = float(poll_interval)
         self.peak_bytes = 0
         self._handle = None
+        self._pynvml = None
+        self._last_error: str | None = None
         try:
             import pynvml
             pynvml.nvmlInit()
             self._pynvml = pynvml
             self._handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-        except Exception:
-            self._pynvml = None
+        except Exception as exc:
+            self._last_error = str(exc)
 
     @property
     def available(self) -> bool:
         return self._handle is not None
 
+    @property
+    def error(self) -> str | None:
+        return self._last_error
+
+    def _read_used(self) -> int:
+        return int(self._pynvml.nvmlDeviceGetMemoryInfo(self._handle).used)
+
     def snapshot_bytes(self) -> int:
-        return int(self._pynvml.nvmlDeviceGetMemoryInfo(self._handle).used) if self.available else 0
+        return self._read_used() if self.available else 0
 
     def run(self) -> None:
         if not self.available:
             return
-        p = self._pynvml
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             try:
-                self.peak_bytes = max(self.peak_bytes, p.nvmlDeviceGetMemoryInfo(self._handle).used)
-            except Exception:
-                pass
-            time.sleep(0.02)
+                used = self._read_used()
+                if used > self.peak_bytes:
+                    self.peak_bytes = used
+            except Exception as exc:
+                if self._last_error is None:
+                    self._last_error = str(exc)
+            time.sleep(self._poll_interval)
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
+        self.join(timeout=1.0)
+        if self._pynvml is not None:
+            try:
+                self._pynvml.nvmlShutdown()
+            except Exception:
+                pass
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, *exc):
+        self.stop()
 
 
 def make_prompt_token_ids(tok, n_tokens: int) -> list[int]:
