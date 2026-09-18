@@ -1,0 +1,88 @@
+{
+  "kind": "quantization_transfer",
+  "weights_gib": {
+    "fp8": 8.79,
+    "bf16": 15.26
+  },
+  "saved_gib": 6.47,
+  "kv": {
+    "bf16": {
+      "kv_tokens": 34333,
+      "kv_gib": 4.71,
+      "free_fraction": 0.85
+    },
+    "fp8": {
+      "kv_tokens": 78170,
+      "kv_gib": 10.74,
+      "free_fraction": 0.85
+    },
+    "ratio": 2.28
+  },
+  "context": 4096,
+  "measured": [
+    {
+      "concurrency": 1,
+      "bf16_tok_s": 44.2,
+      "fp8_tok_s": 75.0,
+      "speedup": 1.7,
+      "bf16_ttft_p50": 31.31829849735368,
+      "fp8_ttft_p50": 31.820476506254636,
+      "bf16_tpot_p50": 23.042276248085592,
+      "fp8_tpot_p50": 13.473523027555993
+    },
+    {
+      "concurrency": 4,
+      "bf16_tok_s": 177.0,
+      "fp8_tok_s": 298.3,
+      "speedup": 1.69,
+      "bf16_ttft_p50": 53.067500004544854,
+      "fp8_ttft_p50": 61.26066700380761,
+      "bf16_tpot_p50": 22.261393850478598,
+      "fp8_tpot_p50": 12.867811618108801
+    },
+    {
+      "concurrency": 8,
+      "bf16_tok_s": 342.9,
+      "fp8_tok_s": 514.4,
+      "speedup": 1.5,
+      "bf16_ttft_p50": 57.74650297826156,
+      "fp8_ttft_p50": 69.88767351140268,
+      "bf16_tpot_p50": 23.027574291382184,
+      "fp8_tpot_p50": 15.193790082561263
+    },
+    {
+      "concurrency": 16,
+      "bf16_tok_s": 642.9,
+      "fp8_tok_s": 982.4,
+      "speedup": 1.53,
+      "bf16_ttft_p50": 62.88735299312975,
+      "fp8_ttft_p50": 80.09919351025019,
+      "bf16_tpot_p50": 24.53242322830135,
+      "fp8_tpot_p50": 15.710088523612612
+    },
+    {
+      "concurrency": 32,
+      "bf16_tok_s": 1131.3,
+      "fp8_tok_s": 1668.0,
+      "speedup": 1.47,
+      "bf16_ttft_p50": 89.0362579957582,
+      "fp8_ttft_p50": 117.36766550166067,
+      "bf16_tpot_p50": 27.57111522444711,
+      "fp8_tpot_p50": 18.262102531487354
+    }
+  ],
+  "peak_vram": {
+    "bf16": {
+      "device_peak_absolute": 21.97,
+      "baseline_at_bench_start": 21.929,
+      "growth_during_sweep": 0.041,
+      "caveat": "baseline taken with the server already resident; use the absolute peak to compare servers, and the engine-reported KV pool for cache capacity"
+    },
+    "fp8": {
+      "device_peak_absolute": 21.576,
+      "baseline_at_bench_start": 21.576,
+      "growth_during_sweep": 0.0,
+      "caveat": "baseline taken with the server already resident; use the absolute peak to compare servers, and the engine-reported KV pool for cache capacity"
+    }
+  }
+}

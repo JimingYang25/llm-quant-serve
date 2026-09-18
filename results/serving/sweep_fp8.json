@@ -1,0 +1,137 @@
+{
+  "kind": "concurrency_sweep",
+  "tag": "fp8",
+  "url": "http://127.0.0.1:8000",
+  "model": "Qwen3-8B-fp8-modelopt",
+  "timestamp": "2026-09-18T06:07:54+00:00",
+  "config": {
+    "requests_per_level": 32,
+    "max_tokens": 128,
+    "warmup": 2,
+    "prompt_tokens_approx": 200,
+    "endpoint": "/v1/completions (raw prompt)"
+  },
+  "peak_vram_gib": {
+    "device_peak_absolute": 21.576,
+    "baseline_at_bench_start": 21.576,
+    "growth_during_sweep": 0.0,
+    "caveat": "baseline taken with the server already resident; use the absolute peak to compare servers, and the engine-reported KV pool for cache capacity"
+  },
+  "levels": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 54.62,
+      "aggregate_tok_s": 75.0,
+      "ttft_ms": {
+        "p50": 31.820476506254636,
+        "p95": 36.51236015284667,
+        "p99": 38.43841526802862,
+        "mean": 30.961395063968666,
+        "n": 32
+      },
+      "tpot_ms": {
+        "p50": 13.473523027555993,
+        "p95": 13.587486922778062,
+        "p99": 13.595267567878926,
+        "mean": 13.194231401323881,
+        "n": 32
+      },
+      "per_request_tokens_mean": 128.0
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 13.73,
+      "aggregate_tok_s": 298.3,
+      "ttft_ms": {
+        "p50": 61.26066700380761,
+        "p95": 70.9380245563807,
+        "p99": 71.94196727505187,
+        "mean": 61.43993693694938,
+        "n": 32
+      },
+      "tpot_ms": {
+        "p50": 12.867811618108801,
+        "p95": 14.227896835746638,
+        "p99": 14.23795647266977,
+        "mean": 13.025710311993626,
+        "n": 32
+      },
+      "per_request_tokens_mean": 128.0
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 7.96,
+      "aggregate_tok_s": 514.4,
+      "ttft_ms": {
+        "p50": 69.88767351140268,
+        "p95": 75.49331285990775,
+        "p99": 77.97481222689385,
+        "mean": 67.12673243782774,
+        "n": 32
+      },
+      "tpot_ms": {
+        "p50": 15.193790082561263,
+        "p95": 15.220982629994177,
+        "p99": 15.226825885738222,
+        "mean": 15.133839598429475,
+        "n": 32
+      },
+      "per_request_tokens_mean": 128.0
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 4.17,
+      "aggregate_tok_s": 982.4,
+      "ttft_ms": {
+        "p50": 80.09919351025019,
+        "p95": 89.07080265053082,
+        "p99": 91.1533905795659,
+        "mean": 80.18789578272845,
+        "n": 32
+      },
+      "tpot_ms": {
+        "p50": 15.710088523612612,
+        "p95": 15.982917688984521,
+        "p99": 15.986646763369897,
+        "mean": 15.743045864916542,
+        "n": 32
+      },
+      "per_request_tokens_mean": 128.0
+    },
+    {
+      "concurrency": 32,
+      "requests": 32,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 2.46,
+      "aggregate_tok_s": 1668.0,
+      "ttft_ms": {
+        "p50": 117.36766550166067,
+        "p95": 127.93286715314025,
+        "p99": 128.71989319392014,
+        "mean": 117.16330434410338,
+        "n": 32
+      },
+      "tpot_ms": {
+        "p50": 18.262102531487354,
+        "p95": 18.28622347475891,
+        "p99": 18.372887701768242,
+        "mean": 18.267139407726063,
+        "n": 32
+      },
+      "per_request_tokens_mean": 128.0
+    }
+  ]
+}

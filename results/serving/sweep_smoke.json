@@ -1,0 +1,66 @@
+{
+  "kind": "concurrency_sweep",
+  "tag": "smoke",
+  "url": "http://127.0.0.1:8000",
+  "model": "Qwen3-8B-fp8-modelopt",
+  "timestamp": "2026-09-18T06:04:46+00:00",
+  "config": {
+    "requests_per_level": 4,
+    "max_tokens": 64,
+    "warmup": 1,
+    "prompt_tokens_approx": 200,
+    "endpoint": "/v1/completions (raw prompt)"
+  },
+  "peak_vram_gib": {
+    "device_minus_idle": 0.002,
+    "idle_gib": 21.572
+  },
+  "levels": [
+    {
+      "concurrency": 1,
+      "requests": 4,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 3.52,
+      "aggregate_tok_s": 72.7,
+      "ttft_ms": {
+        "p50": 29.759891011053696,
+        "p95": 34.45532368932618,
+        "p99": 34.95812392415246,
+        "mean": 30.089025502093136,
+        "n": 4
+      },
+      "tpot_ms": {
+        "p50": 13.509038071210925,
+        "p95": 13.521843259236665,
+        "p99": 13.52283295638959,
+        "mean": 13.4931216308605,
+        "n": 4
+      },
+      "per_request_tokens_mean": 64.0
+    },
+    {
+      "concurrency": 2,
+      "requests": 4,
+      "errors": [],
+      "n_errors": 0,
+      "wall_s": 1.87,
+      "aggregate_tok_s": 136.7,
+      "ttft_ms": {
+        "p50": 101.55324400693644,
+        "p95": 146.24112470191903,
+        "p99": 146.41322174225934,
+        "mean": 99.2714957537828,
+        "n": 4
+      },
+      "tpot_ms": {
+        "p50": 13.238498214161067,
+        "p95": 13.323220258046474,
+        "p99": 13.32764712472757,
+        "mean": 13.233776599153071,
+        "n": 4
+      },
+      "per_request_tokens_mean": 64.0
+    }
+  ]
+}
