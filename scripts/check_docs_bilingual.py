@@ -3,12 +3,16 @@
 
 The invariant this enforces is narrow but decisive: **a translation must not drop or
 invent a figure.** Every numeric token in the source document has to appear in its
-counterpart. Structure is checked the same way — section, heading, code-fence and
-table-row counts — because a dropped paragraph or table row shows up there at a
-glance, whereas prose can be reworded legitimately.
+counterpart — including multi-component version strings, where a corrupted final
+component (`13.0.48` -> `13.0.4`) is a reproducibility defect, not a typo. Structure is
+checked the same way — section, heading, code-fence and table-row counts — because a
+dropped paragraph or table row shows up there at a glance, whereas prose can be
+reworded legitimately.
 
-The language switcher under each H1 is checked too: a bilingual doc that nobody can
-navigate out of is only half bilingual.
+The language switcher under each H1 is checked too, and it is checked as a *count*: a
+bilingual doc that nobody can navigate out of is only half bilingual, and a doc with the
+switcher pasted in twice is one that was edited carelessly. Exactly one, linking to the
+counterpart, and none anywhere else.
 
 Stdlib only, so it runs in any environment — it does not need the llmquant env.
 
@@ -41,8 +45,15 @@ PAIRS: list[tuple[str, str]] = [
 
 # A number, but not a digit run glued to a preceding word or hyphen: `batch-1`,
 # `decision-10`, `wikitext-103` and `layers.10` are identifiers, not measurements.
-NUM = re.compile(r'(?<![\w.\-])[-+]?\d[\d,]*(?:\.\d+)?')
+#
+# `(?:\.\d+)*` (not `(?:\.\d+)?`) matters: version strings are figures here. With a
+# single optional decimal group, `13.0.48` captured as `13.0`, so corrupting the last
+# component of a CUDA / torch / driver version — precisely the numbers this repository
+# exists to pin down — went undetected. Caught by the negative control.
+NUM = re.compile(r'(?<![\w.\-])[-+]?\d[\d,]*(?:\.\d+)*')
 HEADING = re.compile(r'^#{1,6} ')
+# A switcher line names the *other* language and carries a link.
+SWITCHER = re.compile(r'^\s*(?:\*\*(?:English|中文)\*\*|\[(?:English|中文)\]\([^)]*\))')
 
 
 def figures(text: str) -> list[str]:
@@ -62,10 +73,17 @@ def structure(text: str) -> dict[str, int]:
     }
 
 
-def has_switcher(text: str, counterpart_name: str) -> bool:
-    """The counterpart's filename must appear in a link near the top of the document."""
-    head = '\n'.join(text.split('\n')[:6])
-    return counterpart_name in head
+def switchers(text: str, head_lines: int = 8) -> tuple[list[int], list[int]]:
+    """1-based line numbers of switcher lines in the head, and anywhere in the body.
+
+    Exactly one is expected in the head; any occurrence later in the document means the
+    line was pasted in twice — which has actually happened when a header block was
+    rebuilt by hand.
+    """
+    lines = text.split('\n')
+    head = [i + 1 for i, l in enumerate(lines[:head_lines]) if SWITCHER.match(l)]
+    body = [i + head_lines + 1 for i, l in enumerate(lines[head_lines:]) if SWITCHER.match(l)]
+    return head, body
 
 
 def sections(text: str) -> list[tuple[str, int]]:
@@ -127,13 +145,23 @@ def main() -> int:
             bad = True
             print(f'    SECTION COUNT {len(a)} -> {len(b)}')
 
-        # A switcher is only required by the file that links *to* its counterpart.
-        if not has_switcher(tr, pathlib.Path(source_rel).name):
-            bad = True
-            print(f'    NO LANGUAGE SWITCHER under the H1 of {trans_rel}')
-        if not has_switcher(src, pathlib.Path(trans_rel).name):
-            bad = True
-            print(f'    NO LANGUAGE SWITCHER under the H1 of {source_rel}')
+        # Each side must carry exactly one switcher, and it must point at the other side.
+        for rel, text, counterpart in ((source_rel, src, trans_rel),
+                                       (trans_rel, tr, source_rel)):
+            head, body = switchers(text)
+            target = pathlib.Path(counterpart).name
+            if not head:
+                bad = True
+                print(f'    NO LANGUAGE SWITCHER under the H1 of {rel}')
+            elif len(head) != 1:
+                bad = True
+                print(f'    {len(head)} SWITCHER LINES in the head of {rel} at lines {head}')
+            elif target not in text.split('\n')[head[0] - 1]:
+                bad = True
+                print(f'    SWITCHER of {rel} does not link to {target}')
+            if body:
+                bad = True
+                print(f'    STRAY SWITCHER LINE(S) further down {rel} at lines {body}')
 
         if bad:
             violations += 1
