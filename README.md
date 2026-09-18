@@ -95,7 +95,7 @@ Nearly every hard-won result here came with a bug that produced *plausible numbe
 ```
 prompts/          frozen 30-prompt workload (v1.1) + measured token stats + SHA-256
 docs/
-  measurement_spec.md   the protocol: 16 decisions, gates, amendments
+  measurement_spec.md   the protocol: 14 decisions, gates, amendments
   report.md             full technical report
   model_provenance.md   weight digests, revision, derived memory constants
   glossary.md           every abbreviation used here

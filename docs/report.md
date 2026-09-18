@@ -27,7 +27,7 @@ This is a single-GPU post-training study.
 
 ## 2. Method: freeze the instrument before measuring
 
-The full protocol is `docs/measurement_spec.md` — 16 decisions, each recorded before the
+The full protocol is `docs/measurement_spec.md` — 14 decisions, each recorded before the
 measurement it governs, with three dated amendments. The load-bearing ones:
 
 | Decision | Choice | Why |
@@ -240,7 +240,7 @@ error available.
 
 | Artifact | Path |
 |---|---|
-| Protocol, 16 decisions, amendments | `docs/measurement_spec.md` |
+| Protocol, 14 decisions, amendments | `docs/measurement_spec.md` |
 | Weight provenance and derived constants | `docs/model_provenance.md` |
 | Milestone log, including all corrections | `docs/ROADMAP.md` |
 | Cheat sheet: commands and where numbers are generated | `docs/how_to_run.md` |

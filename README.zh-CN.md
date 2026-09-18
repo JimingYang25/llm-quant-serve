@@ -95,7 +95,7 @@ MMLU   : 0.6260 → 0.5490  = −7.70 pp     严重受损（配对 N=2000, z = 4
 ```
 prompts/          冻结的 30 条 prompt（v1.1）+ 实测 token 统计 + SHA-256
 docs/
-  measurement_spec.md  协议：16 条决策、门禁、修正记录
+  measurement_spec.md  协议：14 条决策、门禁、修正记录
   report.md            完整技术报告（英文）
   report.zh-CN.md      完整技术报告（中文）
   model_provenance.md  权重摘要、revision、推导出的显存常数

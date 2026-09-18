@@ -4,7 +4,7 @@
 
 > **Status:** DECISIONS APPLIED (2026-09-13) — awaiting owner sign-off.
 > **Authority:** once signed, no benchmark number produced outside this protocol is admissible.
-> **Decision log:** the fifteen decisions below were proposed by the agent and applied at the owner's instruction; items 5, 12, 14 and 15 are structural and are marked as such.
+> **Decision log:** the fourteen numbered decisions below (1–5 and 7–15; 6 and 16 are unused) were proposed by the agent and applied at the owner's instruction; items 5, 12, 14 and 15 are structural and are marked as such.
 
 ---
 
@@ -31,12 +31,12 @@ Define what is measured, how, at which layer, and with what tolerance, so that t
 | Composition | 1 | English technical, Chinese, code, short reasoning, long-context summarisation |
 | Measured token stats | 1 | `prompts/prompt_set.stats.json` — per-prompt counts, document references and slices, structural checks |
 | Prompt set SHA-256 | 1 | **`77763576f2f044c8128fe5e3302a2def6dec52742cc2a4b3a8e93860c7674b0e`** (v1.1) — required verbatim in every result file |
-
-**Decision 1 — revision after measurement (recorded, not hidden).** The nominal targets were ~16 / ~256 / ~1024 tokens. Measurement with the real Qwen3-8B tokenizer showed v1.0 landing at medians of **24 / 31 / 461**: the medium bucket was indistinguishable from the short bucket and the long bucket was 2.2× under target, which would have left the workload with only two usable buckets and no mid-length coverage. Rather than pad with filler prose, v1.1 makes medium prompts reuse 2–3 paragraphs of a topically related document and long prompts pair two documents. Re-measurement: 24 / 264 / 938, all three inside their target ranges. **Lesson recorded:** nominal bucket sizes are a hypothesis; only the tokenizer settles it.
 | `max_new_tokens` | 2 | **128** (latency runs) · **256** (quality runs) |
 | Sampling | 3 | **Greedy**: `temperature=0`, `top_p=1` |
 | Seed | 4 | **0** (recorded; inert while greedy) |
 | **Thinking mode** | **5** | **DISABLED for all tiers** |
+
+**Decision 1 — revision after measurement (recorded, not hidden).** The nominal targets were ~16 / ~256 / ~1024 tokens. Measurement with the real Qwen3-8B tokenizer showed v1.0 landing at medians of **24 / 31 / 461**: the medium bucket was indistinguishable from the short bucket and the long bucket was 2.2× under target, which would have left the workload with only two usable buckets and no mid-length coverage. Rather than pad with filler prose, v1.1 makes medium prompts reuse 2–3 paragraphs of a topically related document and long prompts pair two documents. Re-measurement: 24 / 264 / 938, all three inside their target ranges. **Lesson recorded:** nominal bucket sizes are a hypothesis; only the tokenizer settles it.
 
 **Decision 5 — justification (structural).** With thinking enabled, Qwen3 emits a variable-length internal monologue, so generated length differs by an order of magnitude across prompts. TPOT and throughput are functions of how much is generated, so tier-to-tier differences would then reflect emergent verbosity rather than quantization; every run also becomes several times more expensive. Disabling thinking makes the workload a controlled length. **Stated cost:** all reported accuracy is *non-thinking-mode* accuracy, and this must be stated in the report and in any comparison with published results.
 
@@ -203,7 +203,7 @@ Every file under `results/` must be self-describing:
 
 ## 10. Sign-off checklist
 
-- [x] All fifteen decisions carry a value
+- [x] All fourteen decisions carry a value
 - [ ] Prompt set exists, is committed, and its SHA-256 is recorded
 - [ ] Owner has reviewed decisions **5, 7, 12, 14, 15** (the consequential ones) and accepts the stated costs
 - [ ] Reviewer approved the spec **before** any benchmark script was written

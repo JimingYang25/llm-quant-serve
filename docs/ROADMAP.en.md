@@ -765,4 +765,16 @@ clicking "English" returned the reader to where they already were. The script re
 `NO LANGUAGE SWITCHER`, and after the fix all six document pairs pass.
 
 
+**Two documentation defects surfaced during the bilingual cross-check and were fixed in the
+same pass.** (a) In `docs/measurement_spec.md` the `Decision 1` justification paragraph sat
+inside the §1 table; GFM ends a table at the first non-row line, so the four rows after it —
+`max_new_tokens` 2, `Sampling` 3, `Seed` 4, `Thinking mode` 5 — rendered as pipe-containing
+text rather than table rows. The paragraph now follows the table. (b) README and report claimed
+"16 decisions" while the spec's own prose said "fifteen" and the numbers actually referenced
+are 14 (1–5 and 7–15; 6 and 16 unused, now stated in the spec). The first audit of that count
+matched only the literal phrase "Decision N", missed the bare index column of the two
+`| Field | Decision | Value |` tables, and under-reported the total as 11 — the wrong number
+reached the owner before the table columns were checked.
+
+
 _Generation time: 2026-09-12 · This file is maintained by the agent; come back and update §1 and §4 when new facts appear within a milestone._

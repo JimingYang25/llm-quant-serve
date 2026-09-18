@@ -24,7 +24,7 @@ WSL2 运行服务的 80 亿参数指令微调语言模型，仍然满足精度�
 
 ## 2. 方法：先冻结测量仪器，再开始测量
 
-完整协议见 `docs/measurement_spec.md`——16 条决策，每一条都在其所约束的那次测量之前记录，
+完整协议见 `docs/measurement_spec.md`——14 条决策，每一条都在其所约束的那次测量之前记录，
 并带有三条注明日期的修订。其中承担关键作用的几条：
 
 | 决策 | 选择 | 理由 |
@@ -214,7 +214,7 @@ MMLU       : 0.6260 → 0.5490  = −7.70 pp     severely damaged
 
 | 产物 | 路径 |
 |---|---|
-| 协议、16 条决策、修订 | `docs/measurement_spec.md` |
+| 协议、14 条决策、修订 | `docs/measurement_spec.md` |
 | 权重来源与推导出的常数 | `docs/model_provenance.md` |
 | 里程碑日志，包含所有更正 | `docs/ROADMAP.md` |
 | 速查表：命令与各数字的生成位置 | `docs/how_to_run.md` |
