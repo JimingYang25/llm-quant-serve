@@ -91,8 +91,13 @@ def main() -> int:
 
     cfg = copy.deepcopy(getattr(mtq, args.recipe))
     for b in protect:
-        for pattern in (f"*model.layers.{b}*", f"*layers.{b}.*"):
-            cfg["quant_cfg"][pattern] = {"enable": False}
+        # ONE pattern, ending at a component boundary. The previous version also used
+        # `*model.layers.{b}*`, whose trailing `*` swallows the next digit: for b=1 it
+        # matched layers 10..19 as well. A "5 protected blocks" run therefore protected
+        # 14 blocks, kept 98 linears in BF16 instead of 35, and produced a 9.57 GiB
+        # export — LARGER than the FP8 export's 8.79 GiB. Verified by counting tensor
+        # dtypes in the artifact (scripts/_inspect_export_sizes.py).
+        cfg["quant_cfg"][f"*layers.{b}.*"] = {"enable": False}
     print(f"quantizing with {args.recipe} + {len(protect)} protected blocks …")
     t0 = time.perf_counter()
     model = mtq.quantize(model, cfg, forward_loop=forward_loop)

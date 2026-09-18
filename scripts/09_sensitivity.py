@@ -109,10 +109,12 @@ def main() -> int:
         model = fresh_model()
         cfg = copy.deepcopy(getattr(mtq, args.recipe))
         if protect_block is not None:
-            # Protect by CONFIG, not by toggling: these modules keep full precision.
-            for pattern in (f"*model.layers.{protect_block}*",
-                            f"*layers.{protect_block}.*"):
-                cfg["quant_cfg"][pattern] = {"enable": False}
+            # Protect by CONFIG, not by toggling. ONE pattern, ending at a component
+            # boundary. The removed pattern `*model.layers.{b}*` also matched layers
+            # 10..19 when b=1 (its trailing `*` swallows the next digit), which
+            # silently turned a single-block probe into an eleven-block one — and made
+            # block 1 look like the most sensitive layer in the model.
+            cfg["quant_cfg"][f"*layers.{protect_block}.*"] = {"enable": False}
         model = mtq.quantize(model, cfg, forward_loop=forward_loop)
         p = acc.perplexity(model, windows)["perplexity"]
         del model
@@ -123,7 +125,13 @@ def main() -> int:
     uniform = run_config(None)
     print(f"  uniform {args.recipe}: ppl {uniform:.4f}")
 
-    blocks = [int(b) for b in args.blocks.split(",")]
+    if args.blocks.strip().lower() == "all":
+        n_layers = AutoModelForCausalLM.from_pretrained(
+            BF16_DIR, dtype=torch.bfloat16, device_map="meta").config.num_hidden_layers
+        blocks = list(range(n_layers))
+    else:
+        blocks = [int(b) for b in args.blocks.split(",")]
+    print(f"probing {len(blocks)} block(s)")
     rows = []
     for b in blocks:
         p = run_config(b)

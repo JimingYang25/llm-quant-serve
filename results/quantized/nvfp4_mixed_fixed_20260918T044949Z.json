@@ -1,0 +1,56 @@
+{
+  "tier": "nvfp4_mixed_fixed",
+  "kind": "mixed_precision",
+  "timestamp": "2026-09-18T04:40:21+00:00",
+  "recipe": "NVFP4_DEFAULT_CFG",
+  "protected_blocks": [
+    1,
+    12,
+    34,
+    0,
+    35
+  ],
+  "calibration": {
+    "dataset": "tatsu-lab/alpaca",
+    "config": null,
+    "split": "train",
+    "n_samples": 128,
+    "corpus_sha256": "1e752ba4eb911d46ccc957f269830c9e61d930b2185e156f63b48a5d92ed6a57",
+    "chars": 66657,
+    "cached_to": "/home/jiming/llm-quant-serve/data/calibration/calib_128.json"
+  },
+  "config": {
+    "ppl_tokens": 32768,
+    "mmlu_limit": 500
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 9.463422903123849,
+      "tokens_scored": 32752,
+      "mean_nll": 2.2474341467022896,
+      "corpus_sha256": "b0687731095d9db32a47c1012982b82dfc7110e05c7b835cf5a5751347c364ed",
+      "oracle": 9.318950097032179,
+      "rel_pct": 1.55,
+      "gate_16_max": 9.785,
+      "pass": true
+    },
+    "mmlu": {
+      "accuracy": 0.556,
+      "n_questions": 500,
+      "n_correct": 278,
+      "chance_level": 0.25,
+      "standard_error": 0.022219990999098087,
+      "elapsed_s": 537.5281316019827,
+      "sample_sha256": "f96cbd836647abb9a76b241f7eb4a51c396c34c92953b72b04e2bb40b4e13453",
+      "oracle": 0.612,
+      "delta_pp": -5.6,
+      "gate_16_min": 0.572,
+      "pass": false
+    }
+  },
+  "export": {
+    "dir": "/home/jiming/models/Qwen3-8B-nvfp4_mixed_fixed-modelopt",
+    "gib": 7.25,
+    "seconds": 11.3
+  }
+}
