@@ -1,5 +1,7 @@
 # Cheat sheet — how to run this project
 
+**English** | [中文](how_to_run.zh-CN.md)
+
 Written for the case where the detail has become overwhelming. If you read only one
 file before running anything, read this one. The full reasoning lives in
 `docs/measurement_spec.md`; you do not need to hold it in your head.
@@ -133,3 +135,18 @@ way they do — that is where the "TTFT ≈ 29 ms + 66 µs × prompt_tokens" lin
 | Two runs disagree by >5 % | compare `thermal` in both JSONs; close GPU apps; re-run |
 | Hash mismatch on start-up | the prompt set changed — re-freeze before measuring |
 | `import tensorrt_llm` hangs | MPI/loopback issue; see ROADMAP §1.5–1.6 |
+
+## 6. Keeping the two languages in sync
+
+Every document has a counterpart in the other language, and both carry a switcher
+link under the title. After editing either side, run the checker:
+
+```bash
+python scripts/check_docs_bilingual.py      # exits 1 if a pair has drifted
+python scripts/check_docs_bilingual.py -v   # also print per-section line counts
+```
+
+It compares figures — every number in the source must appear in the translation —
+along with heading, code-block, table-row and section counts, and the switcher links.
+It is deliberately structural: prose may be reworded, but a measurement may not
+disappear.

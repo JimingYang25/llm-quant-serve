@@ -1,5 +1,7 @@
 # LLM Quantize + Serve
 
+**English** | [中文](README.zh-CN.md) ・ Report: **English** | [中文](docs/report.zh-CN.md)
+
 Quantization and deployment study of **Qwen3-8B** on a single **RTX 5090 Laptop (24 GB, Blackwell sm_120)** under WSL2 — with a frozen measurement protocol, verified oracles, and **negative results reported as first-class findings**.
 
 Every number below is traceable to a committed script and a result file in `results/`. Where a measurement was later found to be invalid, the correction is recorded rather than quietly replaced.
@@ -99,6 +101,7 @@ docs/
   glossary.md           every abbreviation used here
   how_to_run.md         cheat sheet: commands per milestone, where each number is generated
   ROADMAP.md            M0–M6 with every finding, including corrections
+  *.zh-CN.md            Chinese counterparts; ROADMAP.en.md for the Chinese-primary log
 scripts/
   00_env_check.sh       environment acceptance test
   02_baseline_bf16.py   latency oracle (load → warmup → timed loop)
@@ -138,7 +141,7 @@ python scripts/06_bench.py                   # serving sweep (needs trtllm-serve
 ## Limitations
 
 - **Single GPU, single machine.** No tensor parallelism, no multi-node.
-- **A laptop power cap (175 W) and a 24 GB ceiling.** Back-to-back baseline runs sat at **+4.89 %** of a 5 % repeatability gate — the thermal margin is thin and is documented rather than hidden.
+- **A laptop power cap (175 W) and a 24 GB ceiling.** Back-to-back baseline runs sat at **+4.89 %** of a 5 % repeatability gate — **0.11 pp of headroom** — the thermal margin is thin and is documented rather than hidden.
 - **MMLU's resolution at N=500 is ±4.3 pp**; only the N=2000 paired comparison (−7.70 pp, z=4.96) supports the 4-bit conclusion.
 - **The sensitivity ranking is incomplete.** Ten of 36 blocks were validly probed before the wildcard bug was found; the protection set is the best of those ten, not proven optimal.
 - **NVFP4 weights work; NVFP4 KV cache hard-crashes the worker process** on this stack.

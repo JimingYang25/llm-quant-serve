@@ -1,5 +1,7 @@
 # Measurement Spec — LLM Quantize + Serve
 
+**English** | [中文](measurement_spec.zh-CN.md)
+
 > **Status:** DECISIONS APPLIED (2026-09-13) — awaiting owner sign-off.
 > **Authority:** once signed, no benchmark number produced outside this protocol is admissible.
 > **Decision log:** the fifteen decisions below were proposed by the agent and applied at the owner's instruction; items 5, 12, 14 and 15 are structural and are marked as such.

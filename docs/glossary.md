@@ -1,5 +1,7 @@
 # Glossary — LLM Quantization & Serving
 
+**English** | [中文](glossary.zh-CN.md)
+
 Every abbreviation used in this project, with its expansion, a plain-language meaning, and where you will actually meet it. Terms are grouped by theme, not alphabetically, so that related ideas sit together.
 
 ---

@@ -1,5 +1,7 @@
 # Quantization and Deployment of Qwen3-8B on a Single 24 GB Blackwell GPU
 
+**English** | [中文](report.zh-CN.md)
+
 Technical report. Every figure is reproducible from a committed script and a result
 file under `results/`; corrections to earlier findings are recorded rather than
 retracted silently.
@@ -245,3 +247,6 @@ error available.
 | Glossary | `docs/glossary.md` |
 | Raw results, one JSON per measurement | `results/` |
 | Frozen workload with measured token stats | `prompts/prompt_set.json`, `.stats.json` |
+
+*Every document above has a counterpart in the other language (`*.zh-CN.md`; `ROADMAP.en.md` for the Chinese-primary log), and each carries a language switcher at the top. `model_provenance.md` is a generated digest and remains English-only.*
+

@@ -1,5 +1,7 @@
 # LLM Quantize + Serve · 独立完成路线图
 
+**中文** | [English](ROADMAP.en.md)
+
 > 项目代号：**Qwen3-8B PTQ → TRT-LLM Serving**
 > 模式：**你自己动手，我只做机制讲解 + 检查点验收（read-back）**。我不代写实现代码。
 > 目标：一份可直接作为简历项目链接的公开仓库，含可复现脚本、原始数据、量化报告。
@@ -742,5 +744,20 @@ gh repo create llm-quant-serve --public --source=. --remote=origin --push
 ```
 
 **M0–M6 全部完成。**
+
+### 11.1 双语文档（2026-09-18）
+
+公开仓库的文档全套做成中英双语：英文主版 `README.md`、`docs/report.md`、`docs/measurement_spec.md`、
+`docs/glossary.md`、`docs/how_to_run.md` 各配一份 `*.zh-CN.md`；以中文为主的本文件配 `ROADMAP.en.md`。
+每份文档 H1 下方一行语言切换链接。`model_provenance.md` 由脚本生成，保持英文。
+
+**保真不靠自觉，靠脚本。** 新增 `scripts/check_docs_bilingual.py`：不变量是「原文里出现的每一个数值
+都必须出现在译文里」，同时比对标题数、代码块数、表格行数、章节数与语言切换链接，`-v` 再打印逐节行数。
+它刻意只做结构性比对——措辞可以改，测量结果不许消失。
+
+**它上手第一天就抓到一个真 bug。** 中文版 README 的语言切换行是从英文版逐字复制的，于是 `**English**`
+这个标签指向了中文版自己：读者点「English」回到的还是中文页。脚本报出 `NO LANGUAGE SWITCHER`，
+修掉之后六对文档全部通过。
+
 
 _生成时间：2026-09-12 · 本文件由 agent 维护，里程碑内出现新事实时回来更新 §1 与 §4。_
