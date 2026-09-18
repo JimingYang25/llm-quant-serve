@@ -22,33 +22,33 @@
 
 ```
 llm-quant-serve/
-├── README.md                  # 项目说明 + 一张 Pareto 结论表 + 复现步骤
+├── README.md                  # overview, the tier table, reproduce steps
 ├── docs/
-│   ├── report.md              # 量化报告正文（方法论/数据/结论/局限）
-│   └── measurement_spec.md    # 【M1 冻结】测量口径规范，全项目唯一尺子
+│   ├── report.md              # the report body (method / numbers / conclusions / limits)
+│   └── measurement_spec.md    # [frozen at M1] the measurement spec - the project's only ruler
 ├── env/
-│   ├── wsl_setup.md           # 环境搭建全过程记录（含踩坑）
+│   ├── wsl_setup.md           # full environment build log, dead ends included
 │   └── requirements.txt
 ├── configs/
-│   ├── w8a8_int8.yaml         # ModelOpt 量化配置
+│   ├── w8a8_int8.yaml         # ModelOpt quantization config
 │   ├── fp8.yaml
 │   ├── w4a16_nvfp4.yaml
 │   └── quantize_kv_cache.yaml
 ├── scripts/
-│   ├── 00_env_check.sh        # GPU/驱动/CUDA/TRT-LLM 可见性自检
-│   ├── 01_fetch_model.py      # 拉 Qwen3-8B（HF_ENDPOINT 可切镜像）
-│   ├── 02_baseline_bf16.py    # 【oracle】BF16 基线：延迟/显存/吞吐
-│   ├── 03_ptq_export.py       # ModelOpt PTQ → 量化权重（+ 可选 ONNX）
-│   ├── 04_build_or_load.py    # TRT-LLM 引擎构建 / PyTorch 后端直载
-│   ├── 05_serve_openai.py     # OpenAI 兼容服务端
-│   ├── 06_bench.py            # 并发/上下文/批大小 sweep → TTFT/TPOT/显存
-│   ├── 07_eval_accuracy.py    # lm-eval-harness 子集：精度对齐
-│   ├── 08_gate.py             # 汇总 → results/gate.json（PASS/FAIL + 理由）
-│   └── 09_sensitivity.py      # 【加分档】逐层敏感度探针（你 EZTrain 的老手艺）
-├── results/                   # 原始 json/csv，绝不手工编辑
+│   ├── 00_env_check.sh        # GPU / driver / CUDA / TRT-LLM visibility self-check
+│   ├── 01_fetch_model.py      # fetch Qwen3-8B (HF_ENDPOINT switches the mirror)
+│   ├── 02_baseline_bf16.py    # [oracle] BF16 baseline: latency / VRAM / throughput
+│   ├── 03_ptq_export.py       # ModelOpt PTQ -> quantized weights (+ optional ONNX)
+│   ├── 04_build_or_load.py    # TRT-LLM engine build / direct PyTorch-backend load
+│   ├── 05_serve_openai.py     # OpenAI-compatible server
+│   ├── 06_bench.py            # concurrency / context / batch sweep -> TTFT / TPOT / VRAM
+│   ├── 07_eval_accuracy.py    # lm-eval-harness subset: accuracy alignment
+│   ├── 08_gate.py             # summarise -> results/gate.json (PASS/FAIL + reason)
+│   └── 09_sensitivity.py      # [bonus tier] per-layer sensitivity probe (your EZTrain trick)
+├── results/                   # raw json/csv - never hand-edited
 │   ├── baseline/  w8a8/  fp8/  w4a16/  kv_int8/
 │   └── gate.json
-└── tests/                     # 至少覆盖：指标计算、prompt 集合哈希、配置加载
+└── tests/                     # at least: metric maths, prompt-set hash, config loading
 ```
 
 ---
@@ -233,10 +233,10 @@ ImportError: libcudnn.so.9: cannot open shared object file: No such file or dire
 
 **NAT-mode verification result (measured)**
 ```
-127.0.0.1:6001 / :59999        → REFUSED 0.000s        （回环语义恢复正常）
-mpirun -n 1 hostname           → rc=0, 0s, 输出 "Jiming"
+127.0.0.1:6001 / :59999        → REFUSED 0.000s        (loopback semantics normal again)
+mpirun -n 1 hostname           → rc=0, 0s, output "Jiming"
 from mpi4py import MPI         → rc=0, 0s, rank 0 / 1
-import tensorrt_llm            → rc=0, **13.5s**（此前 30 分钟不返回）
+import tensorrt_llm            → rc=0, **13.5s**(previously did not return for 30 minutes)
 ```
 
 **Cost and verification (NAT does not support a localhost proxy; must be accounted for)**
@@ -281,28 +281,28 @@ import tensorrt_llm            → rc=0, **13.5s**（此前 30 分钟不返回�
 **What you need to do**:
 1. Run the verification inside WSL (paste the results to me):
    ```bash
-   nvidia-smi                      # 驱动版本应为 592.01
-   ls /dev/dxg                     # 存在=透传正常
-   lscpu | head -5; free -g        # 分配了几核几 G
-   df -h ~                         # 权重+引擎要预留 ≥ 80GB
+   nvidia-smi                      # driver version should be 592.01
+   ls /dev/dxg                     # present = passthrough working
+   lscpu | head -5; free -g        # how many cores and how many GB are assigned
+   df -h ~                         # reserve >= 80GB for weights + engines
    ```
 2. Check/adjust WSL resources (Windows side `C:\Users\21327\.wslconfig`):
    ```ini
    [wsl2]
-   memory=48GB        # 按你实机 RAM 调整（我这边读不到 RAM，你确认）
+   memory=48GB        # adjust to your actual RAM (not readable from here - confirm)
    processors=12
    swap=16GB
    ```
    After changing, run `wsl --shutdown` and re-enter. Reason: for a 7B-class model the **host memory** peak (loading + quantization calibration) often blows up earlier than VRAM.
 3. Install the CUDA Toolkit inside WSL (**toolkit only**):
    ```bash
-   # 选与驱动 592.01 兼容的版本，装 runfile 时取消 driver 勾选
+   # pick a version compatible with driver 592.01; untick the driver in the runfile installer
    sudo apt-get install -y build-essential
-   # CUDA 12.x/13.x 二选一，与后面 TRT-LLM wheel 的 CUDA tag 对齐
+   # choose CUDA 12.x or 13.x, matching the TRT-LLM wheel's CUDA tag
    ```
 4. Create an independent environment (**do not** reuse the Windows-side conda env):
    ```bash
-   conda create -n llmquant python=3.12 -y   # 或 venv，你定
+   conda create -n llmquant python=3.12 -y   # or venv - your call
    ```
 5. Install TRT-LLM: prefer the **prebuilt wheel from NVIDIA's official pip index** rather than compiling from source:
    ```bash
@@ -623,7 +623,7 @@ It refutes the intuition that "quantization is always cheaper and faster" and gi
 ### 10.1 Good News: Weight-side NVFP4 Works on sm_120
 
 ```
-uniform NVFP4（W4A4，128 校准样本，32752 token）  perplexity 9.5799  vs oracle 9.3190 = +2.80%
+uniform NVFP4 (W4A4, 128 calibration samples, 32752 tokens)  perplexity 9.5799  vs oracle 9.3190 = +2.80%
 ```
 
 **+2.80% is quite good for 4-bit weights + activations**, in sharp contrast to INT8 (per-tensor +111%, SmoothQuant +51%). Mechanism: NVFP4's **block-wise microscaling** accommodates outlier channels — exactly the problem that destroyed per-tensor INT8.
@@ -658,7 +658,7 @@ uniform NVFP4（W4A4，128 校准样本，32752 token）  perplexity 9.5799  vs 
 **How it was found**: the export size did not add up. The mixed tier exported **9.57 GiB, larger than FP8's 8.79 GiB** — 4-bit should not be larger. A per-tensor count:
 
 ```
-bf16      245 tensors  7.35 GiB (76.8%)   ← 应为 147 个
+bf16      245 tensors  7.35 GiB (76.8%)   <-- should be 147
 U8        154 tensors  1.98 GiB (20.6%)
 F8_E4M3   154 tensors  0.25 GiB
 ```
@@ -701,8 +701,8 @@ Only 154 linear layers are 4-bit, **98 remained in BF16**; "protecting 5 blocks"
 ### 10.6 M4's Most Important Scientific Conclusion: Perplexity **underestimates** task-level damage
 
 ```
-困惑度：  9.3190 → 9.4634   =  +1.55%      （看似几乎无损）
-MMLU  ：  0.6260 → 0.5490   =  −7.70 pp    （配对、z=4.96，确凿受损）
+perplexity :  9.3190 → 9.4634   =  +1.55%     (looks nearly lossless)
+MMLU       :  0.6260 → 0.5490   =  −7.70 pp   (paired, z=4.96 - clearly damaged)
 ```
 
 **Perplexity rises only 1.55%, yet MMLU drops 7.7 percentage points.** This refutes the project's earlier assumption — M1/M2 had designated perplexity the "real gate" (because it is dense, low-variance, and able to resolve sub-percentage-point changes) and demoted MMLU to a "coarse screen". **In this case the dense metric severely underestimated the damage.**
@@ -775,6 +775,14 @@ are 14 (1–5 and 7–15; 6 and 16 unused, now stated in the spec). The first au
 matched only the literal phrase "Decision N", missed the bare index column of the two
 `| Field | Decision | Value |` tables, and under-reported the total as 11 — the wrong number
 reached the owner before the table columns were checked.
+
+
+(c) The code blocks of `ROADMAP.en.md` still carried 32 lines of Chinese annotation (§0 repo tree,
+§1.6 result notes, §10.6 axis labels) — a side effect of the "preserve fenced content verbatim"
+rule: the commands were right, but Chinese an English reader has to read was frozen along with
+them. Only the readable annotations were translated; commands, paths and config keys are
+untouched. Verified by asserting that the 25 fenced lines which held no Chinese before are still
+present verbatim, and that the in-fence numeric multiset is unchanged (63 -> 63).
 
 
 _Generation time: 2026-09-12 · This file is maintained by the agent; come back and update §1 and §4 when new facts appear within a milestone._
