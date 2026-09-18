@@ -1,0 +1,44 @@
+{
+  "kind": "sensitivity_probe",
+  "recipe": "NVFP4_DEFAULT_CFG",
+  "timestamp": "2026-09-17T11:07:48+00:00",
+  "oracle_ppl": 9.318950097032179,
+  "uniform_ppl": 9.487,
+  "uniform_rel_pct": 1.804,
+  "ppl_tokens": 4096,
+  "ppl_window": 2048,
+  "corpus_sha256": "6197c251d10338ea2d47622452387429114733ada4bc236ad45baef03e9b8037",
+  "calib_sha256": "1e752ba4eb911d46ccc957f269830c9e61d930b2185e156f63b48a5d92ed6a57",
+  "n_layers": 36,
+  "probed": [
+    0,
+    17,
+    35
+  ],
+  "probe_direction": "protect one block (disable its quantizers), measure ppl recovery",
+  "results": [
+    {
+      "layer": 0,
+      "protected_ppl": 9.4044,
+      "recovered": 0.0826,
+      "recovered_pct_of_oracle": 0.887
+    },
+    {
+      "layer": 17,
+      "protected_ppl": 9.4171,
+      "recovered": 0.07,
+      "recovered_pct_of_oracle": 0.751
+    },
+    {
+      "layer": 35,
+      "protected_ppl": 9.3743,
+      "recovered": 0.1127,
+      "recovered_pct_of_oracle": 1.21
+    }
+  ],
+  "ranking": [
+    35,
+    0,
+    17
+  ]
+}

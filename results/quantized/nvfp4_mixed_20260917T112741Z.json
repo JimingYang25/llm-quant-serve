@@ -1,0 +1,38 @@
+{
+  "tier": "nvfp4_mixed",
+  "kind": "mixed_precision",
+  "timestamp": "2026-09-17T11:26:57+00:00",
+  "recipe": "NVFP4_DEFAULT_CFG",
+  "protected_blocks": [
+    1,
+    12,
+    34,
+    0,
+    35
+  ],
+  "calibration": {
+    "dataset": "tatsu-lab/alpaca",
+    "config": null,
+    "split": "train",
+    "n_samples": 128,
+    "corpus_sha256": "1e752ba4eb911d46ccc957f269830c9e61d930b2185e156f63b48a5d92ed6a57",
+    "chars": 66657,
+    "cached_to": "/home/jiming/llm-quant-serve/data/calibration/calib_128.json"
+  },
+  "config": {
+    "ppl_tokens": 32768,
+    "mmlu_limit": 500
+  },
+  "metrics": {
+    "perplexity": {
+      "perplexity": 9.371557483790648,
+      "tokens_scored": 32752,
+      "mean_nll": 2.2376793026924133,
+      "corpus_sha256": "b0687731095d9db32a47c1012982b82dfc7110e05c7b835cf5a5751347c364ed",
+      "oracle": 9.318950097032179,
+      "rel_pct": 0.565,
+      "gate_16_max": 9.785,
+      "pass": true
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "model": "Qwen3-8B",
+  "precision": "bf16",
+  "by_budget": {
+    "4096": {
+      "ppl": 9.1705,
+      "windows": 2,
+      "corpus_sha256": "6197c251d10338ea"
+    },
+    "8192": {
+      "ppl": 10.6146,
+      "windows": 4,
+      "corpus_sha256": "6cb6663d8971f381"
+    },
+    "16384": {
+      "ppl": 8.3988,
+      "windows": 8,
+      "corpus_sha256": "dd00c078435d98e0"
+    },
+    "32768": {
+      "ppl": 9.319,
+      "windows": 16,
+      "corpus_sha256": "b0687731095d9db3"
+    }
+  }
+}

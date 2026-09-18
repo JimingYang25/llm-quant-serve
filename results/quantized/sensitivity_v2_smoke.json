@@ -1,0 +1,18 @@
+{
+  "kind": "sensitivity_probe_v2",
+  "recipe": "NVFP4_DEFAULT_CFG",
+  "ppl_tokens": 4096,
+  "corpus_sha256": "6197c251d10338ea2d47622452387429114733ada4bc236ad45baef03e9b8037",
+  "uniform_ppl": 9.487,
+  "blocks": [
+    0
+  ],
+  "method": "protection baked into the quantization config; fresh quantize per candidate",
+  "results": [
+    {
+      "block": 0,
+      "protected_ppl": 9.4044,
+      "recovered": 0.0826
+    }
+  ]
+}

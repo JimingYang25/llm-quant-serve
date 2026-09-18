@@ -1,0 +1,72 @@
+{
+  "kind": "sensitivity_probe_v2",
+  "recipe": "NVFP4_DEFAULT_CFG",
+  "ppl_tokens": 32768,
+  "corpus_sha256": "b0687731095d9db32a47c1012982b82dfc7110e05c7b835cf5a5751347c364ed",
+  "uniform_ppl": 9.5799,
+  "blocks": [
+    0,
+    1,
+    6,
+    12,
+    18,
+    24,
+    30,
+    33,
+    34,
+    35
+  ],
+  "method": "protection baked into the quantization config; fresh quantize per candidate",
+  "results": [
+    {
+      "block": 0,
+      "protected_ppl": 9.525,
+      "recovered": 0.055
+    },
+    {
+      "block": 1,
+      "protected_ppl": 9.4536,
+      "recovered": 0.1263
+    },
+    {
+      "block": 6,
+      "protected_ppl": 9.6089,
+      "recovered": -0.029
+    },
+    {
+      "block": 12,
+      "protected_ppl": 9.5053,
+      "recovered": 0.0746
+    },
+    {
+      "block": 18,
+      "protected_ppl": 9.5767,
+      "recovered": 0.0032
+    },
+    {
+      "block": 24,
+      "protected_ppl": 9.5709,
+      "recovered": 0.009
+    },
+    {
+      "block": 30,
+      "protected_ppl": 9.588,
+      "recovered": -0.0081
+    },
+    {
+      "block": 33,
+      "protected_ppl": 9.566,
+      "recovered": 0.0139
+    },
+    {
+      "block": 34,
+      "protected_ppl": 9.5233,
+      "recovered": 0.0566
+    },
+    {
+      "block": 35,
+      "protected_ppl": 9.5272,
+      "recovered": 0.0527
+    }
+  ]
+}
